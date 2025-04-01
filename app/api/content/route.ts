@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import axios from 'axios';
-import * as cheerio from 'cheerio';
 
 // Helper function to shuffle array
 function shuffleArray<T>(array: T[]): T[] {
@@ -31,7 +31,7 @@ export async function GET() {
     ]);
 
     // Process HackerNews - get random 5 stories
-    const shuffledHNStories = shuffleArray(hackerNewsData.data.slice(0, 20));
+    const shuffledHNStories: number[] = shuffleArray(hackerNewsData.data.slice(0, 20));
     const hackernewsStories = await Promise.all(
       shuffledHNStories.slice(0, 5).map((id: number) =>
         axios.get(`https://hacker-news.firebaseio.com/v0/item/${id}.json`)

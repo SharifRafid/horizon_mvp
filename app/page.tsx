@@ -1,82 +1,96 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Home from "./components/Home";
+import { useState, useEffect, useMemo } from 'react';
 import ProfilePage from "./components/ProfilePage";
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const Home = dynamic(() => import('./components/Home'), {
+  ssr: false,
+});
 
 export default function App() {
   const [currentSection, setCurrentSection] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
+  const [isClient, setIsClient] = useState(false);
   
-  const sections = [
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const sections = useMemo(() => [
     { id: "content", label: "Content Library", icon: "📚" },
     { id: "map", label: "Connect with Others", icon: "🌎" },
     { id: "passion", label: "Find Your Passion", icon: "✨" },
     { id: "action", label: "Action Hub", icon: "🚀" },
     { id: "chat", label: "Community Chat", icon: "💬" },
     { id: "profile", label: "Profile", icon: "👤" }
-  ];
-  
-  const handleTouchStart = (e) => {
+  ], []);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.targetTouches[0].clientX);
   };
-  
-  const handleTouchMove = (e) => {
+
+  const handleTouchMove = (e: React.TouchEvent) => {
     setTouchEnd(e.targetTouches[0].clientX);
   };
-  
+
   const handleTouchEnd = () => {
     if (touchStart - touchEnd > 100) {
-      // Swipe left
       if (currentSection < sections.length - 1) {
         setCurrentSection(currentSection + 1);
       }
     }
-    
+
     if (touchEnd - touchStart > 100) {
-      // Swipe right
       if (currentSection > 0) {
         setCurrentSection(currentSection - 1);
       }
     }
   };
-  
-  // Handle keyboard navigation
+
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight' && currentSection < sections.length - 1) {
         setCurrentSection(currentSection + 1);
       } else if (e.key === 'ArrowLeft' && currentSection > 0) {
         setCurrentSection(currentSection - 1);
       }
     };
-    
+    if (!window) return;
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentSection, sections.length]);
-  
-  // Update URL hash when section changes
+
   useEffect(() => {
-    window.location.hash = sections[currentSection].id;
-  }, [currentSection, sections]);
-  
-  // Handle hash change from navbar links
+    if (isClient) {
+      if (!window) return;
+      window.location.hash = sections[currentSection].id;
+    }
+  }, [currentSection, sections, isClient]);
+
   useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.replace('#', '');
-      const index = sections.findIndex(section => section.id === hash);
-      if (index !== -1) {
-        setCurrentSection(index);
-      }
-    };
-    
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [sections]);
-  
+    if (isClient) {
+      if (!window) return;
+      const handleHashChange = () => {
+        const hash = window.location.hash.replace('#', '');
+        const index = sections.findIndex(section => section.id === hash);
+        if (index !== -1) {
+          setCurrentSection(index);
+        }
+      };
+
+      window.addEventListener('hashchange', handleHashChange);
+      return () => window.removeEventListener('hashchange', handleHashChange);
+    }
+  }, [sections, isClient]);
+
+  if (!isClient) {
+    return null;
+  }
+
   return (
     <div className="h-screen overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative">
       {/* Animated background elements */}
@@ -85,32 +99,32 @@ export default function App() {
           <motion.div
             key={i}
             className="absolute w-1 h-1 rounded-full bg-green-400/30"
-            initial={{ 
-              x: Math.random() * window.innerWidth, 
-              y: Math.random() * window.innerHeight,
+            initial={{
+              x: isClient ? Math.random() * (window ? window.innerWidth : 100) : 0,
+              y: isClient ? Math.random() * (window ? window.innerHeight : 100) : 0,
               scale: Math.random() * 0.5 + 0.5
             }}
-            animate={{ 
+            animate={{
               y: [null, Math.random() * -500],
               opacity: [0, 0.7, 0]
             }}
-            transition={{ 
-              repeat: Infinity, 
+            transition={{
+              repeat: Infinity,
               duration: Math.random() * 10 + 10,
               delay: Math.random() * 5
             }}
           />
         ))}
       </div>
-      
-      <div 
+
+      <div
         className="h-full"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
         <div className="hidden sm:block fixed top-1/2 left-4 z-40 transform -translate-y-1/2">
-          <motion.button 
+          <motion.button
             onClick={() => currentSection > 0 && setCurrentSection(currentSection - 1)}
             className={`p-3 rounded-full bg-gray-800/90 shadow-lg backdrop-blur-sm border border-green-500/20 ${currentSection === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-700'}`}
             disabled={currentSection === 0}
@@ -121,9 +135,9 @@ export default function App() {
             <ChevronLeft className="w-6 h-6 text-green-400" />
           </motion.button>
         </div>
-        
+
         <div className="hidden sm:block fixed top-1/2 right-4 z-40 transform -translate-y-1/2">
-          <motion.button 
+          <motion.button
             onClick={() => currentSection < sections.length - 1 && setCurrentSection(currentSection + 1)}
             className={`p-3 rounded-full bg-gray-800/90 shadow-lg backdrop-blur-sm border border-green-500/20 ${currentSection === sections.length - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-700'}`}
             disabled={currentSection === sections.length - 1}
@@ -134,9 +148,9 @@ export default function App() {
             <ChevronRight className="w-6 h-6 text-green-400" />
           </motion.button>
         </div>
-        
+
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40">
-          <motion.div 
+          <motion.div
             className="flex space-x-3 bg-gray-800/80 rounded-full px-5 py-3 shadow-lg backdrop-blur-sm border border-green-500/20"
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -153,7 +167,7 @@ export default function App() {
               >
                 <span className="text-lg">{section.icon}</span>
                 {currentSection === index && (
-                  <motion.span 
+                  <motion.span
                     initial={{ width: 0, opacity: 0 }}
                     animate={{ width: "auto", opacity: 1 }}
                     className="ml-2 whitespace-nowrap overflow-hidden"
@@ -165,7 +179,7 @@ export default function App() {
             ))}
           </motion.div>
         </div>
-        
+
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSection}

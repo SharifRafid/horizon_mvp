@@ -1,7 +1,7 @@
 // components/InteractiveMap.tsx
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, User } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { Location, Person } from '../utils/types';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -9,15 +9,14 @@ import L from 'leaflet';
 
 // Create custom marker icons
 const createMarkerIcon = (color: string) => new L.Icon({
-  iconUrl: `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='${color}' width='36' height='36'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E`,
-  iconSize: [36, 36],
-  iconAnchor: [18, 36],
-  popupAnchor: [0, -36],
-  className: 'marker-icon'
+  iconUrl: `https://via.placeholder.com/32/${color}/FFFFFF?text=%E2%80%A2`,
+  iconSize: [32, 32],
+  popupAnchor: [0, -16],
+  className: 'marker-icon',
 });
 
-const userIcon = createMarkerIcon('%23ef4444'); // Red color for user
-const otherUserIcon = createMarkerIcon('%2322c55e'); // Green color for others
+const userIcon = createMarkerIcon('ef4444'); // Red for user
+const otherUserIcon = createMarkerIcon('22c55e'); // Green for others
 
 // Component to handle map center updates
 const MapCenterHandler = ({ center }: { center: [number, number] }) => {
@@ -28,7 +27,10 @@ const MapCenterHandler = ({ center }: { center: [number, number] }) => {
   return null;
 };
 
-interface InteractiveMapProps {}
+interface InteractiveMapProps {
+  userLocation: Location;
+  nearbyPeople: Person[];
+}
 
 const InteractiveMap: React.FC<InteractiveMapProps> = () => {
   const [userLocation, setUserLocation] = useState<Location | null>(null);
@@ -36,7 +38,6 @@ const InteractiveMap: React.FC<InteractiveMapProps> = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Generate random nearby locations
   const generateNearbyPeople = (center: Location) => {
     const testPeople: Person[] = [
       {
@@ -105,10 +106,10 @@ const InteractiveMap: React.FC<InteractiveMapProps> = () => {
           lng: position.coords.longitude
         };
         setUserLocation(location);
-        generateNearbyPeople(location); // Generate test markers after getting location
+        generateNearbyPeople(location);
         setIsLoading(false);
       },
-      (error) => {
+      () => {
         setError('Unable to get your location. Please enable location services.');
         setIsLoading(false);
       },

@@ -1,8 +1,7 @@
 // components/FindPassion.tsx
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronDown, Filter, Briefcase, Heart, Brain, Users, Target, Plus, Minus } from 'lucide-react';
-import { Passion } from '../utils/types';
+import { ChevronDown, Filter, Briefcase, Plus, Minus } from 'lucide-react';
 
 interface Criteria {
   workStyle: string[];
@@ -26,7 +25,14 @@ interface CareerOption {
   matchScore?: number;
 }
 
-const FindPassion: React.FC = () => {
+interface FindPassionProps {
+  passions: {
+    title: string;
+    desc: string;
+  }[];
+}
+
+const FindPassion: React.FC<FindPassionProps> = ({ }) => {
   const [selectedCriteria, setSelectedCriteria] = useState<Criteria>({
     workStyle: [],
     environment: [],
@@ -297,7 +303,8 @@ const FindPassion: React.FC = () => {
         if (selected.length > 0) {
           totalCriteria += selected.length;
           selected.forEach(criterion => {
-            if (career[category as keyof CareerOption]?.includes(criterion)) {
+            const value = career[category as keyof CareerOption];
+            if (Array.isArray(value) && value.includes(criterion)) {
               matchScore += 1;
             }
           });
@@ -460,7 +467,7 @@ const FindPassion: React.FC = () => {
               </motion.div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-auto">
-                {filteredCareers.map((career, index) => (
+                {filteredCareers.map((career) => (
                   <motion.div
                     key={career.title}
                     initial={{ opacity: 0 }}

@@ -5,16 +5,20 @@ export interface ContentItem {
     link?: string;
     preview?: string;
     cover?: string;
+    description?: string;
+    type?: string;
+    thumbnail?: string;
+    publishedAt?: string;
+    author?: string;
   }
   
   export interface Person {
     id: number;
     name: string;
+    status: string;
+    interests: string[];
     lat: number;
     lng: number;
-    avatar?: string;
-    status?: string;
-    interests?: string[];
   }
   
   export interface Passion {
@@ -31,7 +35,6 @@ export interface ContentItem {
   export interface Location {
     lat: number;
     lng: number;
-    avatar?: string;
   }
 
   export interface Resource {
@@ -40,12 +43,8 @@ export interface ContentItem {
     preview: string;
   }
 
-  export interface Content {
-    type: 'video' | 'article' | 'book';
-    title: string;
-    description: string;
-    url: string;
-    thumbnail?: string;
-    author?: string;
-    publishedAt?: string;
+  export interface Content extends ContentItem {
+    type: string;
   }
+
+  export type AuthMode = 'login' | 'signup' | 'profile';

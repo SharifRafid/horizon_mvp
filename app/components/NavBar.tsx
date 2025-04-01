@@ -1,7 +1,9 @@
 // components/Navbar.tsx
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Menu, X, Bell, Settings, LogOut, User, Search, Moon, Sun } from 'lucide-react';
+import { Menu, X, Bell, Settings, LogOut, User, Search, Moon } from 'lucide-react';
 
 interface NavbarProps {
   currentSection?: string;
@@ -28,9 +30,10 @@ const Navbar: React.FC<NavbarProps> = ({
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [notifications, setNotifications] = useState(3);
+  const notifications = 3;
   
   useEffect(() => {
+    if (!window) return;
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };

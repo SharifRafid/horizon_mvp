@@ -1,8 +1,21 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Mail, Lock, Eye, EyeOff, Award, Calendar, Activity, Settings, LogOut, ChevronRight, Heart, Star, Trophy, Zap } from 'lucide-react';
-
-type AuthMode = 'login' | 'signup' | 'profile';
+import { 
+  Star, 
+  Trophy, 
+  Zap, 
+  Settings,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  User,
+  ChevronRight,
+  Heart,
+  Activity,
+  Award
+} from 'lucide-react';
+import { AuthMode } from '../utils/types';
 
 const ProfilePage: React.FC = () => {
   const [authMode, setAuthMode] = useState<AuthMode>('profile');

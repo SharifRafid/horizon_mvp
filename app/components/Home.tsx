@@ -30,9 +30,30 @@ const Home: React.FC<HomeProps> = ({ initialSection = "content" }) => {
   ];
   const userLocation = { lat: 40.7128, lng: -74.0060 };
   const nearbyPeople = [
-    { id: 1, lat: 40.71, lng: -74.01, name: "Sarah" },
-    { id: 2, lat: 40.72, lng: -74.00, name: "Mike" },
-    { id: 3, lat: 40.73, lng: -74.02, name: "Alex" },
+    { 
+      id: 1, 
+      lat: 40.71, 
+      lng: -74.01, 
+      name: "Sarah",
+      status: "Available",
+      interests: ["Environment", "Technology"]
+    },
+    { 
+      id: 2, 
+      lat: 40.72, 
+      lng: -74.00, 
+      name: "Mike",
+      status: "Active",
+      interests: ["Education", "Community"]
+    },
+    { 
+      id: 3, 
+      lat: 40.73, 
+      lng: -74.02, 
+      name: "Alex",
+      status: "Online",
+      interests: ["Sustainability", "Innovation"]
+    }
   ];
   const passions = [
     { title: "Environmental Activism", desc: "Fight for a greener planet and sustainable future for all generations." },

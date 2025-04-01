@@ -1,18 +1,19 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // components/ContentLibrary.tsx
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ExternalLink, BookOpen, FileText, Youtube, Video, MessageCircle, Book, Newspaper, RefreshCw, InfoIcon } from 'lucide-react';
-import { ContentItem, Content } from '../utils/types';
+import { Content } from '../utils/types';
 import Masonry from 'react-masonry-css';
 
 interface ContentLibraryProps {
-  videos: ContentItem[];
-  tiktoks: ContentItem[];
-  books: ContentItem[];
-  articles: ContentItem[];
+  videos: { title: string; url: string; link: string; }[];
+  tiktoks: { title: string; url: string; link: string; }[];
+  books: { title: string; url: string; cover: string; }[];
+  articles: { title: string; url: string; preview: string; }[];
 }
 
-const ContentLibrary: React.FC = () => {
+const ContentLibrary: React.FC<ContentLibraryProps> = ({ }) => {
   const [activeTab, setActiveTab] = useState('all');
   const [isLoading, setIsLoading] = useState(false);
   const [content, setContent] = useState<Content[]>([
@@ -296,7 +297,7 @@ const ContentLibrary: React.FC = () => {
                       <h3 className="text-lg font-medium text-green-200 mb-2 line-clamp-2">{item.title}</h3>
                       <p className="text-gray-400 text-sm line-clamp-3 mb-4">{item.description}</p>
                       <span className="text-gray-500 text-xs mt-auto">
-                        {new Date(item.publishedAt).toLocaleDateString()}
+                        {item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : 'Unknown Date'}
                       </span>
                     </div>
                   </div>
@@ -310,7 +311,7 @@ const ContentLibrary: React.FC = () => {
                       <p className="text-gray-400 text-sm mb-4 line-clamp-3">{item.description}</p>
                       <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-700">
                         <span className="text-gray-500 text-xs">
-                          {new Date(item.publishedAt).toLocaleDateString()}
+                          {item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : 'Unknown Date'}
                         </span>
                         <a 
                           href={item.url}
