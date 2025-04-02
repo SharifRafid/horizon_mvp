@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import ProfilePage from "./components/ProfilePage";
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BookOpen, Users, Rocket } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 const Home = dynamic(() => import('./components/Home'), {
@@ -15,6 +15,12 @@ export default function App() {
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   const [isClient, setIsClient] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
+  // const [userPreferences, setUserPreferences] = useState({
+  //   theme: 'dark',
+  //   notifications: true,
+  //   autoplay: false
+  // });
   
   useEffect(() => {
     setIsClient(true);
@@ -87,6 +93,17 @@ export default function App() {
     }
   }, [sections, isClient]);
 
+  useEffect(() => {
+    if (!isClient) return;
+    
+    const hasVisitedBefore = localStorage.getItem('hasVisitedBefore');
+    if (hasVisitedBefore) {
+      setShowWelcome(false);
+    } else {
+      localStorage.setItem('hasVisitedBefore', 'true');
+    }
+  }, [isClient]);
+
   if (!isClient) {
     return null;
   }
@@ -116,6 +133,71 @@ export default function App() {
           />
         ))}
       </div>
+
+      {/* Welcome modal for first-time users */}
+      {showWelcome && isClient && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-gray-800 rounded-xl p-8 max-w-md border border-green-500/30"
+          >
+            <div className="text-center mb-6">
+              <span className="text-4xl">✨</span>
+              <h2 className="text-2xl font-bold text-green-400 mt-2">Welcome to Inspire</h2>
+              <p className="text-gray-300 mt-2">Your journey to making a difference starts here.</p>
+            </div>
+            
+            <div className="space-y-4 mb-6">
+              <div className="bg-gray-700/50 p-4 rounded-lg flex items-start gap-3">
+                <div className="bg-green-500/20 p-2 rounded-full">
+                  <BookOpen className="w-5 h-5 text-green-400" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-green-300">Learn</h3>
+                  <p className="text-sm text-gray-400">Explore our content library with curated resources</p>
+                </div>
+              </div>
+              
+              <div className="bg-gray-700/50 p-4 rounded-lg flex items-start gap-3">
+                <div className="bg-green-500/20 p-2 rounded-full">
+                  <Users className="w-5 h-5 text-green-400" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-green-300">Connect</h3>
+                  <p className="text-sm text-gray-400">Find like-minded people in your area</p>
+                </div>
+              </div>
+              
+              <div className="bg-gray-700/50 p-4 rounded-lg flex items-start gap-3">
+                <div className="bg-green-500/20 p-2 rounded-full">
+                  <Rocket className="w-5 h-5 text-green-400" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-green-300">Take Action</h3>
+                  <p className="text-sm text-gray-400">Make a real difference in your community</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={() => setShowWelcome(false)}
+                className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
+              >
+                Get Started
+              </button>
+              
+              <div className="flex items-center justify-center gap-2 mt-2">
+                <span className="text-gray-400 text-sm">Already have an account?</span>
+                <button className="text-green-400 hover:text-green-300 text-sm font-medium">
+                  Sign In
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       <div
         className="h-full"

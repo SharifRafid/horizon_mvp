@@ -1,7 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // components/FindPassion.tsx
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronDown, Filter, Briefcase, Plus, Minus } from 'lucide-react';
+import { Filter, Briefcase, Plus, Minus, BookMarkedIcon, BookmarkIcon, PlusCircle } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { collection, getDocs, addDoc, query, where, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase/config';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 interface Criteria {
   workStyle: string[];
@@ -32,6 +37,25 @@ interface FindPassionProps {
   }[];
 }
 
+// Add new interfaces for Firebase data
+interface CareerData extends CareerOption {
+  id: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdBy: string;
+  createdAt: Date;
+}
+
+interface AddCareerFormData {
+  title: string;
+  description: string;
+  requirements: string;
+  workStyle: string[];
+  environment: string[];
+  values: string[];
+  skills: string[];
+  impactAreas: string[];
+}
+
 const FindPassion: React.FC<FindPassionProps> = ({ }) => {
   const [selectedCriteria, setSelectedCriteria] = useState<Criteria>({
     workStyle: [],
@@ -43,10 +67,13 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
     impactAreas: [],
   });
 
-  const [filteredCareers, setFilteredCareers] = useState<CareerOption[]>([]);
+  const [filteredCareers, setFilteredCareers] = useState<CareerData[]>([]);
   const [isFiltering, setIsFiltering] = useState(false);
   const [expandedSections, setExpandedSections] = useState<string[]>(['workStyle']); // Start with one section open
 
+  // Add user engagement features
+  const [savedCareers, setSavedCareers] = useState<string[]>([]);
+  
   // Predefined options for each criteria
   const criteriaOptions = {
     workStyle: ['Remote', 'Hybrid', 'Office-based', 'Field work', 'Flexible hours', 'Project-based'],
@@ -58,209 +85,152 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
     impactAreas: ['Climate', 'Education', 'Healthcare', 'Social justice', 'Technology', 'Arts & culture'],
   };
 
-  // Expanded career options
-  const careerOptions: CareerOption[] = [
-    {
-      title: "Environmental Data Scientist",
-      description: "Analyze environmental data to help combat climate change",
-      requirements: ["Bachelor's degree", "Programming skills", "Statistics knowledge"],
-      workStyle: ["Remote", "Hybrid"],
-      environment: ["Laboratory", "Office"],
-      values: ["Sustainability", "Environmental protection"],
-      skills: ["Analysis", "Programming", "Research"],
-      impactAreas: ["Climate", "Technology"],
-    },
-    {
-      title: "Sustainable Architecture Designer",
-      description: "Design eco-friendly buildings and sustainable urban spaces",
-      requirements: ["Architecture degree", "Design skills", "Environmental knowledge"],
-      workStyle: ["Hybrid", "Office-based"],
-      environment: ["Studio", "Office"],
-      values: ["Sustainability", "Innovation", "Environmental protection"],
-      skills: ["Design", "Analysis", "Problem-solving"],
-      impactAreas: ["Climate", "Technology", "Arts & culture"],
-    },
-    {
-      title: "Community Health Coordinator",
-      description: "Coordinate health programs in local communities",
-      requirements: ["Healthcare background", "Communication skills"],
-      workStyle: ["Field work", "Flexible hours"],
-      environment: ["Multiple locations"],
-      values: ["Social impact", "Healthcare"],
-      skills: ["Communication", "Leadership"],
-      impactAreas: ["Healthcare", "Social justice"],
-    },
-    {
-      title: "Renewable Energy Engineer",
-      description: "Design and implement clean energy solutions",
-      requirements: ["Engineering degree", "Technical skills"],
-      workStyle: ["Hybrid", "Field work"],
-      environment: ["Multiple locations", "Laboratory"],
-      values: ["Sustainability", "Innovation"],
-      skills: ["Analysis", "Problem-solving", "Technical"],
-      impactAreas: ["Climate", "Technology"],
-    },
-    {
-      title: "Digital Education Specialist",
-      description: "Create and implement online learning programs",
-      requirements: ["Education background", "Digital skills"],
-      workStyle: ["Remote", "Flexible hours"],
-      environment: ["Office"],
-      values: ["Education", "Innovation"],
-      skills: ["Communication", "Design", "Technology"],
-      impactAreas: ["Education", "Technology"],
-    },
-    {
-      title: "Marine Conservation Biologist",
-      description: "Study and protect marine ecosystems",
-      requirements: ["Biology degree", "Research experience"],
-      workStyle: ["Field work", "Flexible hours"],
-      environment: ["Outdoors", "Laboratory"],
-      values: ["Environmental protection", "Sustainability"],
-      skills: ["Research", "Analysis", "Problem-solving"],
-      impactAreas: ["Climate", "Education"],
-    },
-    {
-      title: "Social Innovation Consultant",
-      description: "Help organizations create positive social impact",
-      requirements: ["Business background", "Social sector experience"],
-      workStyle: ["Hybrid", "Project-based"],
-      environment: ["Multiple locations", "Office"],
-      values: ["Social impact", "Innovation"],
-      skills: ["Communication", "Leadership", "Analysis"],
-      impactAreas: ["Social justice", "Education"],
-    },
-    {
-      title: "Urban Agriculture Specialist",
-      description: "Develop sustainable urban farming solutions",
-      requirements: ["Agriculture knowledge", "Project management"],
-      workStyle: ["Field work", "Flexible hours"],
-      environment: ["Outdoors", "Multiple locations"],
-      values: ["Sustainability", "Social impact"],
-      skills: ["Problem-solving", "Leadership"],
-      impactAreas: ["Climate", "Social justice"],
-    },
-    {
-      title: "Mental Health Tech Innovator",
-      description: "Develop digital solutions for mental health care",
-      requirements: ["Psychology background", "Programming skills"],
-      workStyle: ["Remote", "Project-based"],
-      environment: ["Office"],
-      values: ["Healthcare", "Innovation"],
-      skills: ["Programming", "Design", "Research"],
-      impactAreas: ["Healthcare", "Technology"],
-    },
-    {
-      title: "Sustainable Fashion Designer",
-      description: "Create eco-friendly and ethical fashion",
-      requirements: ["Fashion design skills", "Sustainability knowledge"],
-      workStyle: ["Studio-based", "Flexible hours"],
-      environment: ["Studio"],
-      values: ["Sustainability", "Innovation"],
-      skills: ["Design", "Creative"],
-      impactAreas: ["Climate", "Arts & culture"],
-    },
-    {
-      title: "Clean Energy Policy Analyst",
-      description: "Shape policies for renewable energy adoption",
-      requirements: ["Policy background", "Energy sector knowledge"],
-      workStyle: ["Office-based", "Hybrid"],
-      environment: ["Office"],
-      values: ["Sustainability", "Social impact"],
-      skills: ["Analysis", "Research", "Communication"],
-      impactAreas: ["Climate", "Social justice"],
-    },
-    {
-      title: "AI Ethics Researcher",
-      description: "Ensure ethical development of artificial intelligence",
-      requirements: ["Ethics background", "Tech understanding"],
-      workStyle: ["Remote", "Research-based"],
-      environment: ["Laboratory", "Office"],
-      values: ["Innovation", "Social impact"],
-      skills: ["Research", "Analysis", "Programming"],
-      impactAreas: ["Technology", "Social justice"],
-    },
-    {
-      title: "Sustainable Tourism Manager",
-      description: "Develop eco-friendly tourism programs",
-      requirements: ["Tourism background", "Environmental knowledge"],
-      workStyle: ["Field work", "Flexible hours"],
-      environment: ["Multiple locations", "Outdoors"],
-      values: ["Sustainability", "Social impact"],
-      skills: ["Leadership", "Communication"],
-      impactAreas: ["Climate", "Arts & culture"],
-    },
-    {
-      title: "Circular Economy Consultant",
-      description: "Help businesses adopt sustainable practices",
-      requirements: ["Business degree", "Sustainability knowledge"],
-      workStyle: ["Project-based", "Hybrid"],
-      environment: ["Multiple locations"],
-      values: ["Sustainability", "Innovation"],
-      skills: ["Analysis", "Communication", "Problem-solving"],
-      impactAreas: ["Climate", "Technology"],
-    },
-    {
-      title: "Digital Accessibility Specialist",
-      description: "Make technology accessible to all users",
-      requirements: ["UX knowledge", "Accessibility standards"],
-      workStyle: ["Remote", "Project-based"],
-      environment: ["Office"],
-      values: ["Social impact", "Innovation"],
-      skills: ["Design", "Programming", "Communication"],
-      impactAreas: ["Technology", "Social justice"],
-    },
-    {
-      title: "Community Garden Coordinator",
-      description: "Manage urban farming initiatives",
-      requirements: ["Horticulture knowledge", "Community engagement"],
-      workStyle: ["Field work", "Flexible hours"],
-      environment: ["Outdoors", "Multiple locations"],
-      values: ["Sustainability", "Social impact"],
-      skills: ["Leadership", "Communication"],
-      impactAreas: ["Climate", "Social justice"],
-    },
-    {
-      title: "Sustainable Transportation Planner",
-      description: "Design eco-friendly transportation systems",
-      requirements: ["Urban planning degree", "Transportation knowledge"],
-      workStyle: ["Office-based", "Field work"],
-      environment: ["Multiple locations", "Office"],
-      values: ["Sustainability", "Innovation"],
-      skills: ["Analysis", "Design", "Problem-solving"],
-      impactAreas: ["Climate", "Technology"],
-    },
-    {
-      title: "Ocean Plastic Researcher",
-      description: "Study and combat ocean plastic pollution",
-      requirements: ["Marine science degree", "Research experience"],
-      workStyle: ["Field work", "Research-based"],
-      environment: ["Laboratory", "Outdoors"],
-      values: ["Environmental protection", "Sustainability"],
-      skills: ["Research", "Analysis"],
-      impactAreas: ["Climate", "Education"],
-    },
-    {
-      title: "Indigenous Rights Advocate",
-      description: "Protect and promote indigenous communities' rights",
-      requirements: ["Law background", "Cultural knowledge"],
-      workStyle: ["Field work", "Flexible hours"],
-      environment: ["Multiple locations"],
-      values: ["Social impact", "Social justice"],
-      skills: ["Communication", "Leadership"],
-      impactAreas: ["Social justice", "Education"],
-    },
-    {
-      title: "Sustainable Food Systems Analyst",
-      description: "Optimize food supply chains for sustainability",
-      requirements: ["Food science degree", "Supply chain knowledge"],
-      workStyle: ["Hybrid", "Project-based"],
-      environment: ["Multiple locations", "Office"],
-      values: ["Sustainability", "Social impact"],
-      skills: ["Analysis", "Problem-solving"],
-      impactAreas: ["Climate", "Social justice"],
+  // Add new state variables for Firebase integration
+  const [careerOptions, setCareerOptions] = useState<CareerData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [formData, setFormData] = useState<AddCareerFormData>({
+    title: '',
+    description: '',
+    requirements: '',
+    workStyle: [],
+    environment: [],
+    values: [],
+    skills: [],
+    impactAreas: [],
+  });
+  
+  // Replace useAuth with direct Firebase auth
+  const [user, setUser] = useState<any>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  
+  // Initialize Firebase auth
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setAuthLoading(false);
+    });
+    
+    // Cleanup subscription
+    return () => unsubscribe();
+  }, []);
+
+  // Fetch career data from Firestore
+  useEffect(() => {
+    const fetchCareers = async () => {
+      setIsLoading(true);
+      try {
+        // Get all approved careers
+        const careersQuery = query(collection(db, 'careers'), where('status', '==', 'approved'));
+        const careersSnapshot = await getDocs(careersQuery);
+        
+        const careersData: CareerData[] = [];
+        careersSnapshot.forEach((doc) => {
+          careersData.push({ id: doc.id, ...doc.data() } as CareerData);
+        });
+        
+        // If user is logged in, also get their pending careers
+        if (user) {
+          const pendingQuery = query(
+            collection(db, 'careers'), 
+            where('status', '==', 'pending'),
+            where('createdBy', '==', user.uid)
+          );
+          const pendingSnapshot = await getDocs(pendingQuery);
+          
+          pendingSnapshot.forEach((doc) => {
+            careersData.push({ id: doc.id, ...doc.data() } as CareerData);
+          });
+        }
+        
+        setCareerOptions(careersData);
+      } catch (error) {
+        console.error('Error fetching careers:', error);
+        toast.error('Failed to load career data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    // Only fetch when auth state is determined
+    if (!authLoading) {
+      fetchCareers();
     }
-  ];
+  }, [user, authLoading]);
+
+  // Handle form input changes
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  // Handle multi-select changes
+  const handleMultiSelectChange = (category: keyof AddCareerFormData, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [category]: Array.isArray(prev[category]) 
+        ? prev[category].includes(value)
+          ? prev[category].filter(item => item !== value)
+          : [...prev[category], value]
+        : [value]
+    }));
+  };
+  
+  // Submit new career to Firestore
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!user) {
+      toast.error('You must be logged in to add a career');
+      return;
+    }
+    
+    try {
+      // Convert requirements string to array
+      const requirementsArray = formData.requirements
+        .split(',')
+        .map(req => req.trim())
+        .filter(req => req.length > 0);
+      
+      // Add new career to Firestore
+      const newCareer = {
+        ...formData,
+        requirements: requirementsArray,
+        status: 'pending',
+        createdBy: user.uid,
+        createdAt: serverTimestamp(),
+      };
+      
+      const docRef = await addDoc(collection(db, 'careers'), newCareer);
+      
+      // Add to local state
+      setCareerOptions(prev => [
+        ...prev, 
+        { 
+          id: docRef.id, 
+          ...newCareer, 
+          createdAt: new Date() 
+        } as CareerData
+      ]);
+      
+      toast.success('Career added successfully! It will be visible after approval.');
+      setShowAddForm(false);
+      setFormData({
+        title: '',
+        description: '',
+        requirements: '',
+        workStyle: [],
+        environment: [],
+        values: [],
+        skills: [],
+        impactAreas: [],
+      });
+    } catch (error) {
+      console.error('Error adding career:', error);
+      toast.error('Failed to add career');
+    }
+  };
 
   // Handle criteria selection
   const handleCriteriaChange = (category: keyof Criteria, value: string) => {
@@ -323,18 +293,160 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
       .sort((a, b) => (b.matchScore! - a.matchScore!))
     );
     setIsFiltering(false);
-  }, [selectedCriteria]);
+  }, [selectedCriteria, careerOptions]);
+
+  const toggleSaveCareer = (careerTitle: string) => {
+    if (savedCareers.includes(careerTitle)) {
+      setSavedCareers(savedCareers.filter(title => title !== careerTitle));
+    } else {
+      setSavedCareers([...savedCareers, careerTitle]);
+      toast.success('Career Saved! You can find this in your saved careers list.', {
+        duration: 2000,
+      });
+    }
+  };
 
   return (
-    <section id="passion" className="py-16 bg-gradient-to-br from-gray-900 to-gray-800">
-      <div className="container mx-auto px-4">
+    <section id="passion" className="py-16 bg-gradient-to-br from-gray-900 to-gray-800 min-h-screen">
+      <div className="container mx-auto px-6">
         <motion.h1 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-4xl font-bold mb-12 text-center bg-gradient-to-r from-green-400 to-green-300 bg-clip-text text-transparent"
+          className="text-4xl font-bold mb-4 text-center bg-gradient-to-r from-green-400 to-green-300 bg-clip-text text-transparent"
         >
-          Find Your Passions
+          Find Your Passion
         </motion.h1>
+        
+        <p className="text-gray-300 text-center mb-8 max-w-2xl mx-auto">
+          Discover career paths aligned with your values, skills, and interests. Select criteria below to find your perfect match.
+        </p>
+        
+        {/* Add Career Button (only for logged in users) */}
+        {user && !authLoading && (
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={() => setShowAddForm(true)}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            >
+              <PlusCircle className="w-4 h-4" />
+              Add New Career
+            </button>
+          </div>
+        )}
+        
+        {/* Custom Modal for Add Career Form */}
+        {showAddForm && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 border border-green-800/30 text-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-semibold text-green-300">Add New Career Path</h3>
+                  <button 
+                    onClick={() => setShowAddForm(false)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <label htmlFor="title" className="block text-sm font-medium text-gray-300">
+                      Career Title
+                    </label>
+                    <input 
+                      id="title" 
+                      name="title" 
+                      value={formData.title} 
+                      onChange={handleInputChange} 
+                      required 
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="description" className="block text-sm font-medium text-gray-300">
+                      Description
+                    </label>
+                    <textarea 
+                      id="description" 
+                      name="description" 
+                      value={formData.description} 
+                      onChange={handleInputChange} 
+                      required 
+                      rows={4}
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="requirements" className="block text-sm font-medium text-gray-300">
+                      Requirements (comma separated)
+                    </label>
+                    <textarea 
+                      id="requirements" 
+                      name="requirements" 
+                      value={formData.requirements} 
+                      onChange={handleInputChange} 
+                      required 
+                      rows={3}
+                      placeholder="Bachelor's degree, Programming skills, etc."
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+                  
+                  {/* Multi-select fields */}
+                  {Object.entries(criteriaOptions).map(([category, options]) => (
+                    <div key={category} className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-300 capitalize">
+                        {category.replace(/([A-Z])/g, ' $1').trim()}
+                      </label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {options.map((option) => (
+                          <label 
+                            key={option} 
+                            className={`
+                              flex items-center p-2 rounded-lg cursor-pointer
+                              ${formData[category as keyof AddCareerFormData]?.includes(option)
+                                ? 'bg-green-500/20 text-green-300'
+                                : 'text-gray-300 hover:bg-gray-700/50'}
+                            `}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={formData[category as keyof AddCareerFormData]?.includes(option)}
+                              onChange={() => handleMultiSelectChange(category as keyof AddCareerFormData, option)}
+                              className="form-checkbox rounded border-green-500 text-green-500 focus:ring-green-500 bg-gray-700 mr-2"
+                            />
+                            <span className="text-sm">{option}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  <div className="flex justify-end gap-2 pt-4">
+                    <button 
+                      type="button" 
+                      onClick={() => setShowAddForm(false)}
+                      className="px-4 py-2 border border-gray-600 text-gray-300 hover:bg-gray-700 rounded-lg transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      type="submit" 
+                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                    >
+                      Submit for Approval
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
         
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Criteria Selection Panel */}
@@ -435,7 +547,12 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
               )}
             </h2>
 
-            {isFiltering ? (
+            {isLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto"></div>
+                <p className="text-gray-400 mt-4">Loading career data...</p>
+              </div>
+            ) : isFiltering ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto"></div>
               </div>
@@ -466,17 +583,53 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
                 </p>
               </motion.div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-auto">
-                {filteredCareers.map((career) => (
-                  <motion.div
-                    key={career.title}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                    layout
-                    className="bg-gray-800 rounded-xl shadow-lg border border-green-800/30 hover:border-green-500/50 transition-all hover:shadow-green-900/20 hover:shadow-xl group h-full"
-                  >
-                    <div className="p-6 flex flex-col h-full">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-12"
+              >
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-semibold text-white">Your Career Matches</h2>
+                  {savedCareers.length > 0 && (
+                    <span className="text-green-400 text-sm">
+                      {savedCareers.length} career{savedCareers.length !== 1 ? 's' : ''} saved
+                    </span>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredCareers.map((career, index) => (
+                    <motion.div
+                      key={career.id || index}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.05 }}
+                      className={`bg-gray-800 rounded-xl p-6 border transition-all group relative
+                        ${career.status === 'pending' 
+                          ? 'border-yellow-600/50 hover:border-yellow-500/70' 
+                          : 'border-green-800/30 hover:border-green-500/50'}`}
+                    >
+                      {/* Pending badge */}
+                      {career.status === 'pending' && (
+                        <div className="absolute top-4 right-4 px-2 py-1 bg-yellow-600/20 text-yellow-400 text-xs rounded-full">
+                          Pending Approval
+                        </div>
+                      )}
+                      
+                      {/* Save button (only for approved careers) */}
+                      {career.status === 'approved' && (
+                        <button
+                          onClick={() => toggleSaveCareer(career.title)}
+                          className="absolute top-4 right-4 text-gray-400 hover:text-green-400 transition-colors"
+                        >
+                          {savedCareers.includes(career.title) ? (
+                            <BookMarkedIcon className="w-5 h-5 text-green-400" />
+                          ) : (
+                            <BookmarkIcon className="w-5 h-5" />
+                          )}
+                        </button>
+                      )}
+                      
                       {/* Match Score Badge */}
                       <div className="flex justify-between items-start mb-4">
                         <h3 className="text-xl font-semibold text-green-300 group-hover:text-green-400 transition-colors pr-4">
@@ -540,14 +693,18 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
                       </div>
 
                       {/* Learn More Button */}
-                      <button className="mt-6 w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg text-sm transition-colors flex items-center justify-center gap-2">
-                        Learn More
-                        <ChevronDown className="w-4 h-4 transform -rotate-90" />
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+                      <div className="mt-6 flex gap-2">
+                        <button className="flex-1 py-2 px-3 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-colors">
+                          Learn More
+                        </button>
+                        <button className="py-2 px-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm transition-colors">
+                          Related Courses
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
             )}
           </motion.div>
         </div>

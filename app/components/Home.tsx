@@ -60,16 +60,16 @@ const Home: React.FC<HomeProps> = ({ initialSection = "content" }) => {
     { title: "Social Justice", desc: "Advocate for equality, fairness, and human rights for marginalized communities." },
     { title: "Education", desc: "Help provide quality education and learning opportunities for everyone." },
   ];
-  const resources = [
-    { title: "Green Peace", url: "https://greenpeace.org", preview: "Environmental NGO working to protect our planet's natural resources." },
-    { title: "Habitat for Humanity", url: "https://habitat.org", preview: "Building homes and communities for those in need around the world." },
-    { title: "Khan Academy", url: "https://khanacademy.org", preview: "Free education platform with courses on various subjects." },
-  ];
-  const messages = [
-    { user: "Sarah", text: "Hey everyone! I'm new here and excited to connect.", time: "10:30 AM" },
-    { user: "Mike", text: "Hello there! Welcome to the community.", time: "10:31 AM" },
-    { user: "Alex", text: "I'm working on an environmental project if anyone wants to join!", time: "10:35 AM" },
-  ];
+  // const resources = [
+  //   { title: "Green Peace", url: "https://greenpeace.org", preview: "Environmental NGO working to protect our planet's natural resources." },
+  //   { title: "Habitat for Humanity", url: "https://habitat.org", preview: "Building homes and communities for those in need around the world." },
+  //   { title: "Khan Academy", url: "https://khanacademy.org", preview: "Free education platform with courses on various subjects." },
+  // ];
+  // const messages = [
+  //   { user: "Sarah", text: "Hey everyone! I'm new here and excited to connect.", time: "10:30 AM" },
+  //   { user: "Mike", text: "Hello there! Welcome to the community.", time: "10:31 AM" },
+  //   { user: "Alex", text: "I'm working on an environmental project if anyone wants to join!", time: "10:35 AM" },
+  // ];
 
   // Render the appropriate component based on initialSection
   const renderSection = () => {
@@ -81,9 +81,9 @@ const Home: React.FC<HomeProps> = ({ initialSection = "content" }) => {
       case "passion":
         return <FindPassion passions={passions} />;
       case "action":
-        return <ActionHub resources={resources} />;
+        return <ActionHub />;
       case "chat":
-        return <CommunityChat messages={messages} />;
+        return <CommunityChat />;
       default:
         return <ContentLibrary videos={videos} tiktoks={tiktoks} books={books} articles={articles} />;
     }

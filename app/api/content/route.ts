@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import axios from 'axios';
+import { db } from '../../firebase/config';
+import { collection, getDocs, deleteDoc, doc, setDoc } from 'firebase/firestore';
 
 // Helper function to shuffle array
 function shuffleArray<T>(array: T[]): T[] {
@@ -16,18 +18,45 @@ export async function GET() {
     // Randomly select which news source to use
     const newsSource = Math.random() < 0.5 ? 'hackernews' : 'reddit';
     
-    const [hackerNewsData, redditData, openLibraryData, gutenbergData] = await Promise.all([
+    const [hackerNewsData, redditData, openLibraryData, gutenbergData, tedTalksData] = await Promise.all([
       // Fetch HackerNews stories
       axios.get('https://hacker-news.firebaseio.com/v0/topstories.json'),
       
       // Fetch Reddit posts from programming and technology subreddits
-      axios.get('https://www.reddit.com/r/programming+technology+coding/hot.json?limit=10'),
+      axios.get('https://www.reddit.com/r/programming+technology+coding+datascience+machinelearning/hot.json?limit=15'),
       
       // Fetch books from Open Library
       axios.get('https://openlibrary.org/subjects/career_development.json'),
       
       // Fetch free books from Project Gutenberg
-      axios.get('https://gutendex.com/books/?topic=technology&mime_type=image')
+      axios.get('https://gutendex.com/books/?topic=technology&mime_type=image'),
+      
+      // Fetch TED talks (simulated with a curated list since TED API requires key)
+      Promise.resolve({
+        data: [
+          {
+            title: "The Future of AI and How It Will Change Everything",
+            description: "A fascinating look at how artificial intelligence is reshaping our world",
+            url: "https://www.youtube.com/embed/B-Osn1gMNtw",
+            thumbnail: "https://img.youtube.com/vi/B-Osn1gMNtw/maxresdefault.jpg",
+            author: "Sam Altman"
+          },
+          {
+            title: "How to Learn Anything Fast",
+            description: "Techniques to accelerate your learning in any field",
+            url: "https://www.youtube.com/embed/5MgBikgcWnY",
+            thumbnail: "https://img.youtube.com/vi/5MgBikgcWnY/maxresdefault.jpg",
+            author: "Josh Kaufman"
+          },
+          {
+            title: "The Power of Vulnerability",
+            description: "Understanding how vulnerability shapes our personal and professional lives",
+            url: "https://www.youtube.com/embed/iCvmsMzlF7o",
+            thumbnail: "https://img.youtube.com/vi/iCvmsMzlF7o/maxresdefault.jpg",
+            author: "Brené Brown"
+          }
+        ]
+      })
     ]);
 
     // Process HackerNews - get random 5 stories
@@ -44,8 +73,11 @@ export async function GET() {
       .map((post: any) => ({
         title: post.data.title,
         description: post.data.selftext || 'Click to read more',
+        type: 'article',
         url: `https://reddit.com${post.data.permalink}`,
-        thumbnail: post.data.thumbnail !== 'self' ? post.data.thumbnail : 'https://www.reddit.com/favicon.ico',
+        thumbnail: post.data.thumbnail !== 'self' && post.data.thumbnail !== 'default' 
+          ? post.data.thumbnail 
+          : 'https://www.reddit.com/favicon.ico',
         publishedAt: new Date(post.data.created_utc * 1000).toISOString(),
         author: post.data.author
       }));
@@ -74,15 +106,25 @@ export async function GET() {
       }))
     ]);
 
-    // Educational videos (since we can't use YouTube API without key)
+    // Educational videos (TED talks and other educational content)
     const videos = [
+      ...tedTalksData.data.map((talk: any) => ({
+        title: talk.title,
+        description: talk.description,
+        type: 'video',
+        url: talk.url,
+        thumbnail: talk.thumbnail,
+        publishedAt: new Date().toISOString(),
+        author: talk.author
+      })),
       {
         title: "Understanding Web Development",
         description: "A comprehensive guide to modern web development practices and technologies",
         type: 'video',
         url: "https://www.youtube.com/embed/Q8NPQ2RgWyg",
         thumbnail: "https://img.youtube.com/vi/Q8NPQ2RgWyg/maxresdefault.jpg",
-        publishedAt: new Date().toISOString()
+        publishedAt: new Date().toISOString(),
+        author: "Traversy Media"
       },
       {
         title: "Learn Programming Basics",
@@ -90,20 +132,36 @@ export async function GET() {
         type: 'video',
         url: "https://www.youtube.com/embed/zOjov-2OZ0E",
         thumbnail: "https://img.youtube.com/vi/zOjov-2OZ0E/maxresdefault.jpg",
-        publishedAt: new Date().toISOString()
+        publishedAt: new Date().toISOString(),
+        author: "freeCodeCamp"
+      }
+    ];
+
+    // Short-form videos (TikTok/Reels style)
+    const shortVideos = [
+      {
+        title: "Quick JavaScript Tip",
+        description: "Learn this one trick to simplify your code",
+        type: 'tiktok',
+        url: "https://www.youtube.com/embed/DHjqpvDnNGE",
+        thumbnail: "https://img.youtube.com/vi/DHjqpvDnNGE/maxresdefault.jpg",
+        publishedAt: new Date().toISOString(),
+        author: "CodeWithHarry"
       },
       {
-        title: "Data Structures Explained",
-        description: "Understanding fundamental data structures in programming",
-        type: 'video',
-        url: "https://www.youtube.com/embed/RBSGKlAvoiM",
-        thumbnail: "https://img.youtube.com/vi/RBSGKlAvoiM/maxresdefault.jpg",
-        publishedAt: new Date().toISOString()
+        title: "CSS Animation in 60 Seconds",
+        description: "Create stunning animations with just a few lines of CSS",
+        type: 'tiktok',
+        url: "https://www.youtube.com/embed/YszONjKpgg4",
+        thumbnail: "https://img.youtube.com/vi/YszONjKpgg4/maxresdefault.jpg",
+        publishedAt: new Date().toISOString(),
+        author: "WebDevSimplified"
       }
     ];
 
     const careerContent = {
       videos: shuffleArray(videos),
+      tiktoks: shuffleArray(shortVideos),
       articles: shuffleArray(newsSource === 'hackernews' 
         ? hackernewsStories.map((story: any) => ({
             title: story.data.title,
@@ -118,6 +176,39 @@ export async function GET() {
       ),
       books: books
     };
+
+    // Clear existing content in Firestore and save new content
+    try {
+      // Get all existing content documents
+      const contentCollection = collection(db, 'content');
+      const contentSnapshot = await getDocs(contentCollection);
+      
+      // Delete all existing content documents
+      const deletePromises = contentSnapshot.docs.map(doc => deleteDoc(doc.ref));
+      await Promise.all(deletePromises);
+      
+      // Save new content to Firestore
+      const allContent = [
+        ...careerContent.videos.map((item: any) => ({ ...item, id: `video-${Date.now()}-${Math.random().toString(36).substr(2, 9)}` })),
+        ...careerContent.tiktoks.map((item: any) => ({ ...item, id: `tiktok-${Date.now()}-${Math.random().toString(36).substr(2, 9)}` })),
+        ...careerContent.articles.map((item: any) => ({ ...item, id: `article-${Date.now()}-${Math.random().toString(36).substr(2, 9)}` })),
+        ...careerContent.books.map((item: any) => ({ ...item, id: `book-${Date.now()}-${Math.random().toString(36).substr(2, 9)}` }))
+      ];
+      
+      // Save each content item as a separate document
+      const savePromises = allContent.map(item => 
+        setDoc(doc(db, 'content', item.id), {
+          ...item,
+          createdAt: new Date().toISOString()
+        })
+      );
+      
+      await Promise.all(savePromises);
+      console.log('Content saved to Firestore successfully');
+    } catch (firestoreError) {
+      console.error('Error saving to Firestore:', firestoreError);
+      // Continue to return the content even if Firestore save fails
+    }
 
     return NextResponse.json(careerContent);
   } catch (error) {

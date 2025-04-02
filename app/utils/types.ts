@@ -1,5 +1,6 @@
 // types.ts
 export interface ContentItem {
+    id: string;
     title: string;
     url: string;
     link?: string;
