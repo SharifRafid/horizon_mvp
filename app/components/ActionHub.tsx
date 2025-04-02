@@ -11,9 +11,8 @@ import {
   AlertCircle,
   Calendar,
   MapPin,
-  Tag,
   Globe,
-  Heart
+  Heart,
 } from 'lucide-react';
 import { 
   collection, 
@@ -237,7 +236,7 @@ const ActionHub: React.FC = () => {
         );
       case 'approved':
         return (
-          <div className="flex items-center text-green-400 text-sm">
+          <div className="flex items-center text-blue-400 text-sm">
             <Check className="w-4 h-4 mr-1" />
             <span>Approved</span>
           </div>
@@ -268,10 +267,10 @@ const ActionHub: React.FC = () => {
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 50, opacity: 0 }}
-          className="bg-gray-800 rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-green-800/30"
+          className="bg-gray-800 rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-blue-500/30"
         >
           {/* Header with image */}
-          <div className="relative h-48 bg-gradient-to-r from-green-800 to-green-600 rounded-t-xl overflow-hidden">
+          <div className="relative h-48 bg-gradient-to-r from-blue-600 to-teal-500 rounded-t-xl overflow-hidden">
             {selectedAction.imageUrl ? (
               <img 
                 src={selectedAction.imageUrl} 
@@ -280,7 +279,7 @@ const ActionHub: React.FC = () => {
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <Globe className="w-16 h-16 text-green-300/50" />
+                <Globe className="w-16 h-16 text-blue-300/50" />
               </div>
             )}
             
@@ -293,7 +292,7 @@ const ActionHub: React.FC = () => {
             
             <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-gray-900 to-transparent">
               <h2 className="text-2xl font-bold text-white">{selectedAction.title}</h2>
-              <p className="text-green-300">{selectedAction.organization}</p>
+              <p className="text-blue-300">{selectedAction.organization}</p>
             </div>
           </div>
           
@@ -309,16 +308,47 @@ const ActionHub: React.FC = () => {
             )}
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">Category</h3>
+                  <p className="text-white">{selectedAction.category}</p>
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">Date</h3>
+                  <p className="text-white">{selectedAction.startDate}</p>
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">Location</h3>
+                  <p className="text-white">{selectedAction.location}</p>
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">Impact Areas</h3>
+                  {/* <div className="flex flex-wrap gap-1 mt-1">
+                    {selectedAction.impactAreas.map((area, index) => (
+                      <span 
+                        key={index} 
+                        className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full"
+                      >
+                        {area}
+                      </span>
+                    ))}
+                  </div> */}
+                </div>
+              </div>
+              
               <div className="md:col-span-2">
-                <h3 className="text-xl font-semibold text-green-400 mb-2">About this Action</h3>
+                <h3 className="text-xl font-semibold text-blue-400 mb-2">About this Action</h3>
                 <p className="text-gray-300 whitespace-pre-line mb-6">{selectedAction.description}</p>
                 
-                <h3 className="text-xl font-semibold text-green-400 mb-2">Get Involved</h3>
+                <h3 className="text-xl font-semibold text-blue-400 mb-2">Get Involved</h3>
                 <a 
                   href={selectedAction.website} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="inline-flex items-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors mb-4"
+                  className="inline-flex items-center bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 text-white px-4 py-2 rounded-lg transition-colors mb-4"
                 >
                   Visit Website <ExternalLink className="ml-2 w-4 h-4" />
                 </a>
@@ -326,38 +356,6 @@ const ActionHub: React.FC = () => {
                 <p className="text-gray-300">
                   <span className="font-medium text-white">Contact:</span> {selectedAction.contactEmail}
                 </p>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="bg-gray-700/50 p-4 rounded-lg">
-                  <h4 className="font-medium text-green-300 mb-2 flex items-center">
-                    <Calendar className="w-4 h-4 mr-2" /> Timeline
-                  </h4>
-                  <p className="text-gray-300">
-                    <span className="font-medium text-white">Starts:</span> {selectedAction.startDate}
-                  </p>
-                  {selectedAction.endDate && (
-                    <p className="text-gray-300">
-                      <span className="font-medium text-white">Ends:</span> {selectedAction.endDate}
-                    </p>
-                  )}
-                </div>
-                
-                <div className="bg-gray-700/50 p-4 rounded-lg">
-                  <h4 className="font-medium text-green-300 mb-2 flex items-center">
-                    <MapPin className="w-4 h-4 mr-2" /> Location
-                  </h4>
-                  <p className="text-gray-300">{selectedAction.location}</p>
-                </div>
-                
-                <div className="bg-gray-700/50 p-4 rounded-lg">
-                  <h4 className="font-medium text-green-300 mb-2 flex items-center">
-                    <Tag className="w-4 h-4 mr-2" /> Category
-                  </h4>
-                  <p className="text-gray-300">
-                    {categories.find(c => c.id === selectedAction.category)?.name || selectedAction.category}
-                  </p>
-                </div>
               </div>
             </div>
           </div>
@@ -378,11 +376,11 @@ const ActionHub: React.FC = () => {
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 50, opacity: 0 }}
-          className="bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-green-800/30"
+          className="bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-blue-500/30"
         >
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-green-400">Add New Action</h2>
+              <h2 className="text-2xl font-bold text-blue-400">Add New Action</h2>
               <button 
                 onClick={() => setShowAddForm(false)}
                 className="text-gray-400 hover:text-white"
@@ -400,7 +398,7 @@ const ActionHub: React.FC = () => {
                   value={formData.title}
                   onChange={handleInputChange}
                   required
-                  className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Campaign or initiative title"
                 />
               </div>
@@ -413,7 +411,7 @@ const ActionHub: React.FC = () => {
                   value={formData.organization}
                   onChange={handleInputChange}
                   required
-                  className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Organization or group name"
                 />
               </div>
@@ -426,7 +424,7 @@ const ActionHub: React.FC = () => {
                   onChange={handleInputChange}
                   required
                   rows={5}
-                  className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Describe the initiative, its goals, and how people can participate"
                 ></textarea>
               </div>
@@ -439,7 +437,7 @@ const ActionHub: React.FC = () => {
                     value={formData.category}
                     onChange={handleInputChange}
                     required
-                    className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {categories.map(category => (
                       <option key={category.id} value={category.id}>{category.name}</option>
@@ -455,7 +453,7 @@ const ActionHub: React.FC = () => {
                     value={formData.location}
                     onChange={handleInputChange}
                     required
-                    className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="City, Country or Online"
                   />
                 </div>
@@ -470,7 +468,7 @@ const ActionHub: React.FC = () => {
                     value={formData.startDate}
                     onChange={handleInputChange}
                     required
-                    className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 
@@ -481,7 +479,7 @@ const ActionHub: React.FC = () => {
                     name="endDate"
                     value={formData.endDate}
                     onChange={handleInputChange}
-                    className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -495,7 +493,7 @@ const ActionHub: React.FC = () => {
                     value={formData.contactEmail}
                     onChange={handleInputChange}
                     required
-                    className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="contact@example.org"
                   />
                 </div>
@@ -508,7 +506,7 @@ const ActionHub: React.FC = () => {
                     value={formData.website}
                     onChange={handleInputChange}
                     required
-                    className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="https://example.org"
                   />
                 </div>
@@ -521,7 +519,7 @@ const ActionHub: React.FC = () => {
                   name="imageUrl"
                   value={formData.imageUrl}
                   onChange={handleInputChange}
-                  className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="https://example.org/image.jpg"
                 />
               </div>
@@ -535,7 +533,7 @@ const ActionHub: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-lg font-medium shadow-lg hover:from-green-600 hover:to-green-700 transition-colors disabled:opacity-70"
+                  className="w-full bg-gradient-to-r from-blue-500 to-teal-400 text-white py-3 rounded-lg font-medium shadow-lg hover:from-blue-600 hover:to-teal-500 transition-colors disabled:opacity-70"
                 >
                   {isSubmitting ? 'Submitting...' : 'Submit Action'}
                 </button>
@@ -554,7 +552,7 @@ const ActionHub: React.FC = () => {
           <motion.h1 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-4xl font-bold mb-4 md:mb-0 bg-gradient-to-r from-green-400 to-green-300 bg-clip-text text-transparent"
+            className="text-4xl font-bold mb-4 md:mb-0 bg-gradient-to-r from-blue-400 to-teal-300 bg-clip-text text-transparent"
           >
             Action Hub
           </motion.h1>
@@ -564,7 +562,7 @@ const ActionHub: React.FC = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               onClick={() => setShowAddForm(true)}
-              className="flex items-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+              className="flex items-center bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 text-white px-4 py-2 rounded-lg transition-colors"
             >
               <Plus className="w-5 h-5 mr-2" /> Add Action
             </motion.button>
@@ -579,7 +577,7 @@ const ActionHub: React.FC = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search actions..."
-                className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             
@@ -587,7 +585,7 @@ const ActionHub: React.FC = () => {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full md:w-48 p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full md:w-48 p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Categories</option>
                 {categories.map(category => (
@@ -600,11 +598,11 @@ const ActionHub: React.FC = () => {
         
         {loading ? (
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
           </div>
         ) : filteredActions.length === 0 ? (
-          <div className="bg-gray-800 p-8 rounded-xl text-center border border-green-800/30">
-            <Globe className="w-16 h-16 text-green-400/50 mx-auto mb-4" />
+          <div className="bg-gray-800 p-8 rounded-xl text-center border border-blue-500/30">
+            <Globe className="w-16 h-16 text-blue-400/50 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">No Actions Found</h3>
             <p className="text-gray-400 mb-6">
               {searchTerm || selectedCategory !== 'all' 
@@ -615,7 +613,7 @@ const ActionHub: React.FC = () => {
             {user && (
               <button
                 onClick={() => setShowAddForm(true)}
-                className="inline-flex items-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+                className="inline-flex items-center bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 text-white px-4 py-2 rounded-lg transition-colors"
               >
                 <Plus className="w-5 h-5 mr-2" /> Add Action
               </button>
@@ -632,11 +630,11 @@ const ActionHub: React.FC = () => {
                 className={`bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow border ${
                   action.status === 'pending' 
                     ? 'border-yellow-800/30' 
-                    : 'border-green-800/30'
+                    : 'border-blue-500/30'
                 } overflow-hidden cursor-pointer h-full flex flex-col`}
                 onClick={() => setSelectedAction(action)}
               >
-                <div className="h-40 bg-gradient-to-r from-green-800 to-green-600 relative">
+                <div className="h-40 bg-gradient-to-r from-blue-600 to-teal-500 relative">
                   {action.imageUrl ? (
                     <img 
                       src={action.imageUrl} 
@@ -645,7 +643,7 @@ const ActionHub: React.FC = () => {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <Heart className="w-12 h-12 text-green-300/50" />
+                      <Heart className="w-12 h-12 text-blue-300/50" />
                     </div>
                   )}
                   
@@ -655,7 +653,7 @@ const ActionHub: React.FC = () => {
                 </div>
                 
                 <div className="p-5 flex-1 flex flex-col">
-                  <h3 className="text-xl font-semibold mb-1 text-green-300">{action.title}</h3>
+                  <h3 className="text-xl font-semibold mb-1 text-blue-300">{action.title}</h3>
                   <p className="text-gray-400 text-sm mb-2">{action.organization}</p>
                   
                   <p className="text-gray-300 mb-4 line-clamp-3 flex-1">

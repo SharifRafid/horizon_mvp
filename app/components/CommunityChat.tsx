@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // components/CommunityChat.tsx
 import React, { useState, useRef, useEffect } from 'react';
-import { motion} from 'framer-motion';
-import { Send, Smile, Paperclip, Image, MoreVertical, Search, AlertCircle } from 'lucide-react';
-import { MessageCircleIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Send, Smile, Paperclip, Image, MoreVertical, Search, AlertCircle} from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { 
   onAuthStateChanged, 
@@ -46,7 +46,7 @@ interface ChatMessage {
   channel: string;
 }
 
-const CommunityChat: React.FC = () => {
+const CommunityChat: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
   // Auth state
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -249,273 +249,291 @@ const CommunityChat: React.FC = () => {
   
   // Scroll to bottom when messages change
   useEffect(() => {
-    scrollToBottom();
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
   
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // Handle channel change
+  const handleChannelChange = (channelId: string) => {
+    setActiveChannel(channelId);
   };
   
-  const handleSendMessage = (e: React.FormEvent) => {
+  // Handle login
+  const handleLogin = () => {
+    // Redirect to profile page for login
+    if (onClose) onClose();
+    // You would need to implement a way to open the profile modal here
+    // For now, we'll just redirect to the profile section
+    router.push('#profile');
+  };
+  
+  // Handle sending a message
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!newMessage.trim() || !user || !userProfile) return;
     
-    const messagesRef = ref(rtdb, `messages/${activeChannel}`);
-    const newMessageRef = push(messagesRef);
-    
-    set(newMessageRef, {
-      user: {
-        uid: user.uid,
-        name: userProfile.name,
-        avatar: userProfile.avatar
-      },
-      text: newMessage.trim(),
-      timestamp: Date.now(),
-      channel: activeChannel
-    });
-    
-    setNewMessage('');
+    try {
+      const messageData = {
+        user: {
+          uid: user.uid,
+          name: userProfile.name,
+          avatar: userProfile.avatar
+        },
+        text: newMessage,
+        timestamp: Date.now(),
+        channel: activeChannel
+      };
+      
+      const messagesRef = ref(rtdb, `messages/${activeChannel}`);
+      await push(messagesRef, messageData);
+      
+      setNewMessage('');
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
   };
   
-  const handleChannelChange = (channelId: string) => {
-    setActiveChannel(channelId);
-    
-    // Reset unread count for this channel
-    setUnreadCounts(prev => ({
-      ...prev,
-      [channelId]: 0
-    }));
-  };
-  
+  // Format timestamp
   const formatTimestamp = (timestamp: number) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
   
-  const handleLogin = () => {
-    router.push('/profile');
-  };
-  
   return (
-    <section className="py-4 bg-gradient-to-br from-gray-900 to-gray-800 min-h-screen flex flex-col">
-      <div className="container mx-auto px-4 flex-1 flex flex-col">
-        <motion.h1 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-4xl font-bold mb-4 text-center bg-gradient-to-r from-green-400 to-green-300 bg-clip-text text-transparent"
-        >
-          Community Chat
-        </motion.h1>
-        
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-green-800/30 flex-1 flex flex-col md:flex-row"
-        >
-          {/* Channel sidebar */}
-          <div className="w-full md:w-64 bg-gray-900 border-r border-green-800/30 md:flex flex-col">
-            <div className="p-4 border-b border-green-800/30">
-              <h3 className="text-green-400 font-medium">Channels</h3>
-            </div>
-            <div className="p-2 flex md:block overflow-x-auto md:overflow-x-visible">
+    <div className="flex flex-col h-full pt-8"> {/* Added pt-8 to make room for close button */}
+      <div className="flex flex-col md:flex-row h-full">
+        {/* Sidebar - Channels and Online Users */}
+        <div className="w-full md:w-1/3 bg-gray-900 border-r border-blue-500/20 flex flex-col md:h-full overflow-hidden">
+          <div className="p-4 border-b border-blue-500/20">
+            <h3 className="text-blue-400 font-medium mb-2 flex items-center">
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Channels
+            </h3>
+            <div className="space-y-1">
               {channels.map(channel => (
                 <button
                   key={channel.id}
                   onClick={() => handleChannelChange(channel.id)}
-                  className={`md:w-full text-left px-3 py-2 rounded-lg mb-1 flex justify-between items-center whitespace-nowrap mr-2 md:mr-0 ${
+                  className={`w-full text-left px-3 py-2 rounded-lg flex items-center justify-between ${
                     activeChannel === channel.id 
-                      ? 'bg-green-500/20 text-green-300' 
-                      : 'text-gray-300 hover:bg-gray-800'
+                      ? 'bg-blue-500/10 text-blue-300' 
+                      : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                   }`}
                 >
                   <span># {channel.name}</span>
                   {unreadCounts[channel.id] > 0 && (
-                    <span className="bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ml-2">
+                    <span className="bg-blue-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                       {unreadCounts[channel.id]}
                     </span>
                   )}
                 </button>
               ))}
             </div>
-            
-            <div className="p-4 border-t border-green-800/30 mt-auto">
-              <h3 className="text-green-400 font-medium mb-2">Online Users ({onlineUsers.length})</h3>
-              <div className="space-y-2 max-h-40 overflow-y-auto">
-                {onlineUsers.length > 0 ? (
-                  onlineUsers.map(onlineUser => (
-                    <div key={onlineUser.uid} className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                      <div className="w-6 h-6 rounded-full overflow-hidden">
+          </div>
+          
+          <div className="p-4 border-t border-blue-500/20 mt-auto">
+            <h3 className="text-blue-400 font-medium mb-2 flex items-center">
+              <div className="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
+              Online Users ({onlineUsers.length})
+            </h3>
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {onlineUsers.length > 0 ? (
+                onlineUsers.map(onlineUser => (
+                  <div key={onlineUser.uid} className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                    <div className="w-6 h-6 rounded-full overflow-hidden">
+                      <img 
+                        src={onlineUser.avatar} 
+                        alt={onlineUser.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <span className="text-gray-300 text-sm truncate">
+                      {onlineUser.name}
+                      {user && onlineUser.uid === user.uid ? " (You)" : ""}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-gray-400 text-sm">No users online</div>
+              )}
+            </div>
+          </div>
+          
+          {!user && !loading && (
+            <div className="p-4 bg-gray-800/50 border-t border-blue-500/20">
+              <button
+                onClick={handleLogin}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition-colors"
+              >
+                Sign In to Chat
+              </button>
+            </div>
+          )}
+        </div>
+        
+        {/* Mobile channel selector */}
+        <div className="md:hidden p-2 bg-gray-900 border-b border-blue-500/20 flex overflow-x-auto">
+          {channels.map(channel => (
+            <button
+              key={channel.id}
+              onClick={() => handleChannelChange(channel.id)}
+              className={`px-3 py-1 rounded-lg mr-2 flex items-center whitespace-nowrap ${
+                activeChannel === channel.id 
+                  ? 'bg-blue-500/10 text-blue-300' 
+                  : 'text-gray-300 bg-gray-800/50'
+              }`}
+            >
+              <span># {channel.name}</span>
+              {unreadCounts[channel.id] > 0 && (
+                <span className="bg-blue-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center ml-2">
+                  {unreadCounts[channel.id]}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+        
+        {/* Main chat area */}
+        <div className="flex-1 flex flex-col">
+          {/* Chat header */}
+          <div className="bg-gray-900 p-3 border-b border-blue-500/20 flex justify-between items-center">
+            <div className="flex items-center">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-teal-400 flex items-center justify-center text-white flex-shrink-0">
+                <MessageCircle className="w-4 h-4" />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-blue-400 font-medium">
+                  #{channels.find(c => c.id === activeChannel)?.name || 'Channel'}
+                </h3>
+                <p className="text-xs text-gray-400">
+                  {channels.find(c => c.id === activeChannel)?.description || 'Channel description'}
+                </p>
+              </div>
+            </div>
+            <div className="flex space-x-3">
+              <button className="text-gray-400 hover:text-blue-400">
+                <Search className="w-5 h-5" />
+              </button>
+              <button className="text-gray-400 hover:text-blue-400">
+                <MoreVertical className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+          
+          {/* Message display */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-800/30">
+            {messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                <MessageCircle className="w-12 h-12 mb-2 opacity-50" />
+                <p>No messages yet in this channel. Start the conversation!</p>
+              </div>
+            ) : (
+              <>
+                {messages.map((msg, index) => (
+                  <motion.div
+                    key={msg.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className={`flex items-start space-x-4 ${user && msg.user.uid === user.uid ? "justify-end" : ""}`}
+                  >
+                    {(!user || msg.user.uid !== user.uid) && (
+                      <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
                         <img 
-                          src={onlineUser.avatar} 
-                          alt={onlineUser.name} 
+                          src={msg.user.avatar} 
+                          alt={msg.user.name} 
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <span className="text-gray-300 text-sm truncate">
-                        {onlineUser.name}
-                        {user && onlineUser.uid === user.uid ? " (You)" : ""}
-                      </span>
+                    )}
+                    <div className={`p-3 rounded-lg max-w-[80%] ${
+                      user && msg.user.uid === user.uid 
+                        ? "bg-blue-600/20 rounded-tr-none text-right" 
+                        : "bg-gray-700 rounded-tl-none"
+                    }`}>
+                      <p className={`font-semibold ${user && msg.user.uid === user.uid ? "text-blue-300" : "text-blue-400"}`}>
+                        {msg.user.name}
+                        {user && msg.user.uid === user.uid ? " (You)" : ""}
+                      </p>
+                      <p className="text-gray-200">{msg.text}</p>
+                      <p className="text-xs text-gray-400 mt-1">{formatTimestamp(msg.timestamp)}</p>
                     </div>
-                  ))
-                ) : (
-                  <div className="text-gray-400 text-sm">No users online</div>
-                )}
-              </div>
-            </div>
-            
-            {!user && !loading && (
-              <div className="p-4 bg-gray-800/50 border-t border-green-800/30">
-                <button
-                  onClick={handleLogin}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium transition-colors"
-                >
-                  Sign In to Chat
-                </button>
-              </div>
+                    {user && msg.user.uid === user.uid && (
+                      <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                        <img 
+                          src={msg.user.avatar} 
+                          alt={msg.user.name} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+                
+                <div ref={messagesEndRef} />
+              </>
             )}
           </div>
           
-          {/* Main chat area */}
-          <div className="flex-1 flex flex-col h-[70vh] md:h-auto">
-            {/* Chat header */}
-            <div className="bg-gray-900 p-4 border-b border-green-800/30 flex justify-between items-center">
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center text-white flex-shrink-0">
-                  <MessageCircleIcon className="w-5 h-5" />
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-green-400 font-medium">
-                    #{channels.find(c => c.id === activeChannel)?.name || 'Channel'}
-                  </h3>
-                  <p className="text-xs text-gray-400">
-                    {channels.find(c => c.id === activeChannel)?.description || 'Channel description'}
-                  </p>
-                </div>
-              </div>
-              <div className="flex space-x-3">
-                <button className="text-gray-400 hover:text-green-400">
-                  <Search className="w-5 h-5" />
-                </button>
-                <button className="text-gray-400 hover:text-green-400">
-                  <MoreVertical className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-            
-            {/* Message display */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                  <MessageCircleIcon className="w-12 h-12 mb-2 opacity-50" />
-                  <p>No messages yet in this channel. Start the conversation!</p>
-                </div>
-              ) : (
-                <>
-                  {messages.map((msg, index) => (
-                    <motion.div
-                      key={msg.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      className={`flex items-start space-x-4 ${user && msg.user.uid === user.uid ? "justify-end" : ""}`}
-                    >
-                      {(!user || msg.user.uid !== user.uid) && (
-                        <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                          <img 
-                            src={msg.user.avatar} 
-                            alt={msg.user.name} 
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
-                      <div className={`p-3 rounded-lg max-w-[80%] ${
-                        user && msg.user.uid === user.uid 
-                          ? "bg-green-600/30 rounded-tr-none text-right" 
-                          : "bg-gray-700 rounded-tl-none"
-                      }`}>
-                        <p className={`font-semibold ${user && msg.user.uid === user.uid ? "text-green-300" : "text-green-400"}`}>
-                          {msg.user.name}
-                          {user && msg.user.uid === user.uid ? " (You)" : ""}
-                        </p>
-                        <p className="text-gray-200">{msg.text}</p>
-                        <p className="text-xs text-gray-400 mt-1">{formatTimestamp(msg.timestamp)}</p>
-                      </div>
-                      {user && msg.user.uid === user.uid && (
-                        <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                          <img 
-                            src={msg.user.avatar} 
-                            alt={msg.user.name} 
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
-                    </motion.div>
-                  ))}
-                  
-                  <div ref={messagesEndRef} />
-                </>
-              )}
-            </div>
-            
-            {/* Message input */}
-            <motion.div 
-              initial={{ y: 20 }}
-              animate={{ y: 0 }}
-              className="p-4 border-t border-green-800/30 bg-gray-900/50"
-            >
-              {user ? (
-                <form onSubmit={handleSendMessage} className="flex gap-2">
-                  <div className="flex space-x-2">
-                    <button type="button" className="text-gray-400 hover:text-green-400">
-                      <Paperclip className="w-5 h-5" />
-                    </button>
-                    <button type="button" className="text-gray-400 hover:text-green-400">
-                      <Image className="w-5 h-5" />
-                    </button>
-                  </div>
-                  <input 
-                    type="text" 
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type a message..." 
-                    className="w-full p-3 rounded-lg bg-gray-700 border border-green-800/30 text-white focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-400"
-                  />
-                  <div className="flex space-x-2">
-                    <button type="button" className="text-gray-400 hover:text-green-400">
-                      <Smile className="w-5 h-5" />
-                    </button>
-                    <motion.button 
-                      type="submit"
-                      disabled={!newMessage.trim()}
-                      className="bg-gradient-to-r from-green-500 to-green-600 text-white p-3 rounded-lg disabled:opacity-50 transition-opacity"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Send className="w-5 h-5" />
-                    </motion.button>
-                  </div>
-                </form>
-              ) : (
-                <div className="bg-gray-700/50 rounded-lg p-4 flex items-center justify-between">
-                  <div className="flex items-center">
-                    <AlertCircle className="w-5 h-5 text-yellow-500 mr-2" />
-                    <p className="text-gray-300">Sign in to join the conversation</p>
-                  </div>
-                  <button
-                    onClick={handleLogin}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors"
-                  >
-                    Sign In
+          {/* Message input */}
+          <motion.div 
+            initial={{ y: 20 }}
+            animate={{ y: 0 }}
+            className="p-4 border-t border-blue-500/20 bg-gray-900/50"
+          >
+            {user ? (
+              <form onSubmit={handleSendMessage} className="flex gap-2">
+                <div className="flex space-x-2">
+                  <button type="button" className="text-gray-400 hover:text-blue-400">
+                    <Paperclip className="w-5 h-5" />
+                  </button>
+                  <button type="button" className="text-gray-400 hover:text-blue-400">
+                    <Image className="w-5 h-5" />
                   </button>
                 </div>
-              )}
-            </motion.div>
-          </div>
-        </motion.div>
+                <input 
+                  type="text" 
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="Type a message..." 
+                  className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
+                />
+                <div className="flex space-x-2">
+                  <button type="button" className="text-gray-400 hover:text-blue-400">
+                    <Smile className="w-5 h-5" />
+                  </button>
+                  <motion.button 
+                    type="submit"
+                    disabled={!newMessage.trim()}
+                    className="bg-blue-600 text-white p-3 rounded-lg disabled:opacity-50 transition-opacity"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Send className="w-5 h-5" />
+                  </motion.button>
+                </div>
+              </form>
+            ) : (
+              <div className="bg-gray-700/50 rounded-lg p-4 flex items-center justify-between">
+                <div className="flex items-center">
+                  <AlertCircle className="w-5 h-5 text-yellow-500 mr-2" />
+                  <p className="text-gray-300">Sign in to join the conversation</p>
+                </div>
+                <button
+                  onClick={handleLogin}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+                >
+                  Sign In
+                </button>
+              </div>
+            )}
+          </motion.div>
+        </div>
       </div>
-    </section>
+    </div>
   );
 };
 

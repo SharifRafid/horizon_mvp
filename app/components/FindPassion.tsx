@@ -312,7 +312,7 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
         <motion.h1 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-4xl font-bold mb-4 text-center bg-gradient-to-r from-green-400 to-green-300 bg-clip-text text-transparent"
+          className="text-4xl font-bold mb-4 text-center bg-gradient-to-r from-blue-500 to-teal-400 bg-clip-text text-transparent"
         >
           Find Your Passion
         </motion.h1>
@@ -326,7 +326,7 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
           <div className="flex justify-end mb-4">
             <button
               onClick={() => setShowAddForm(true)}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
             >
               <PlusCircle className="w-4 h-4" />
               Add New Career
@@ -337,10 +337,10 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
         {/* Custom Modal for Add Career Form */}
         {showAddForm && (
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-800 border border-green-800/30 text-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-gray-800 border border-blue-800/30 text-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-semibold text-green-300">Add New Career Path</h3>
+                  <h3 className="text-xl font-semibold text-blue-400">Add New Career Path</h3>
                   <button 
                     onClick={() => setShowAddForm(false)}
                     className="text-gray-400 hover:text-white"
@@ -362,7 +362,7 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
                       value={formData.title} 
                       onChange={handleInputChange} 
                       required 
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   
@@ -377,7 +377,7 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
                       onChange={handleInputChange} 
                       required 
                       rows={4}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   
@@ -393,7 +393,7 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
                       required 
                       rows={3}
                       placeholder="Bachelor's degree, Programming skills, etc."
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   
@@ -410,7 +410,7 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
                             className={`
                               flex items-center p-2 rounded-lg cursor-pointer
                               ${formData[category as keyof AddCareerFormData]?.includes(option)
-                                ? 'bg-green-500/20 text-green-300'
+                                ? 'bg-blue-500/20 text-blue-300'
                                 : 'text-gray-300 hover:bg-gray-700/50'}
                             `}
                           >
@@ -418,7 +418,7 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
                               type="checkbox"
                               checked={formData[category as keyof AddCareerFormData]?.includes(option)}
                               onChange={() => handleMultiSelectChange(category as keyof AddCareerFormData, option)}
-                              className="form-checkbox rounded border-green-500 text-green-500 focus:ring-green-500 bg-gray-700 mr-2"
+                              className="form-checkbox rounded border-blue-500 text-blue-500 focus:ring-blue-500 bg-gray-700 mr-2"
                             />
                             <span className="text-sm">{option}</span>
                           </label>
@@ -437,7 +437,7 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
                     </button>
                     <button 
                       type="submit" 
-                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                     >
                       Submit for Approval
                     </button>
@@ -455,8 +455,8 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
             animate={{ x: 0, opacity: 1 }}
             className="lg:w-1/3"
           >
-            <div className="bg-gray-800 p-4 rounded-xl shadow-lg border border-green-800/30 sticky top-4">
-              <h2 className="text-2xl font-semibold mb-4 text-green-300 flex items-center">
+            <div className="bg-gray-800 p-4 rounded-xl shadow-lg border border-blue-800/30 sticky top-4">
+              <h2 className="text-2xl font-semibold mb-4 text-blue-400 flex items-center">
                 <Filter className="w-6 h-6 mr-2" />
                 Your Preferences
               </h2>
@@ -471,18 +471,18 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
                       onClick={() => toggleSection(category)}
                       className="w-full px-4 py-3 flex justify-between items-center text-left hover:bg-gray-700/70 transition-colors"
                     >
-                      <span className="text-green-200 font-medium capitalize flex items-center">
+                      <span className="text-blue-200 font-medium capitalize flex items-center">
                         {category.replace(/([A-Z])/g, ' $1').trim()}
                         {selectedCriteria[category as keyof Criteria].length > 0 && (
-                          <span className="ml-2 px-2 py-0.5 bg-green-500/20 text-green-300 text-xs rounded-full">
+                          <span className="ml-2 px-2 py-0.5 bg-blue-500/20 text-blue-300 text-xs rounded-full">
                             {selectedCriteria[category as keyof Criteria].length}
                           </span>
                         )}
                       </span>
                       {expandedSections.includes(category) ? (
-                        <Minus className="w-4 h-4 text-green-300" />
+                        <Minus className="w-4 h-4 text-blue-300" />
                       ) : (
-                        <Plus className="w-4 h-4 text-green-300" />
+                        <Plus className="w-4 h-4 text-blue-300" />
                       )}
                     </button>
 
@@ -500,7 +500,7 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
                               className={`
                                 flex items-center p-2 rounded-lg cursor-pointer
                                 ${selectedCriteria[category as keyof Criteria].includes(option)
-                                  ? 'bg-green-500/20 text-green-300'
+                                  ? 'bg-blue-500/20 text-blue-300'
                                   : 'text-gray-300 hover:bg-gray-700/50'}
                               `}
                             >
@@ -508,7 +508,7 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
                                 type="checkbox"
                                 checked={selectedCriteria[category as keyof Criteria].includes(option)}
                                 onChange={() => handleCriteriaChange(category as keyof Criteria, option)}
-                                className="form-checkbox rounded border-green-500 text-green-500 focus:ring-green-500 bg-gray-700 mr-2"
+                                className="form-checkbox rounded border-blue-500 text-blue-500 focus:ring-blue-500 bg-gray-700 mr-2"
                               />
                               <span className="text-sm">{option}</span>
                             </label>
@@ -537,7 +537,7 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
             animate={{ x: 0, opacity: 1 }}
             className="lg:w-2/3"
           >
-            <h2 className="text-2xl font-semibold mb-6 text-green-300 flex items-center">
+            <h2 className="text-2xl font-semibold mb-6 text-blue-400 flex items-center">
               <Briefcase className="w-6 h-6 mr-2" />
               Matching Careers
               {filteredCareers.length > 0 && (
@@ -549,12 +549,12 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
 
             {isLoading ? (
               <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
                 <p className="text-gray-400 mt-4">Loading career data...</p>
               </div>
             ) : isFiltering ? (
               <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
               </div>
             ) : Object.values(selectedCriteria).every(arr => arr.length === 0) ? (
               <motion.div
@@ -591,7 +591,7 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-semibold text-white">Your Career Matches</h2>
                   {savedCareers.length > 0 && (
-                    <span className="text-green-400 text-sm">
+                    <span className="text-blue-400 text-sm">
                       {savedCareers.length} career{savedCareers.length !== 1 ? 's' : ''} saved
                     </span>
                   )}
@@ -607,7 +607,7 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
                       className={`bg-gray-800 rounded-xl p-6 border transition-all group relative
                         ${career.status === 'pending' 
                           ? 'border-yellow-600/50 hover:border-yellow-500/70' 
-                          : 'border-green-800/30 hover:border-green-500/50'}`}
+                          : 'border-blue-800/30 hover:border-blue-500/50'}`}
                     >
                       {/* Pending badge */}
                       {career.status === 'pending' && (
@@ -620,10 +620,10 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
                       {career.status === 'approved' && (
                         <button
                           onClick={() => toggleSaveCareer(career.title)}
-                          className="absolute top-4 right-4 text-gray-400 hover:text-green-400 transition-colors"
+                          className="absolute top-4 right-4 text-gray-400 hover:text-blue-400 transition-colors"
                         >
                           {savedCareers.includes(career.title) ? (
-                            <BookMarkedIcon className="w-5 h-5 text-green-400" />
+                            <BookMarkedIcon className="w-5 h-5 text-blue-400" />
                           ) : (
                             <BookmarkIcon className="w-5 h-5" />
                           )}
@@ -632,11 +632,11 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
                       
                       {/* Match Score Badge */}
                       <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-xl font-semibold text-green-300 group-hover:text-green-400 transition-colors pr-4">
+                        <h3 className="text-xl font-semibold text-blue-300 group-hover:text-blue-400 transition-colors pr-4">
                           {career.title}
                         </h3>
                         <div className="flex-shrink-0 bg-gray-900/90 rounded-lg px-3 py-1">
-                          <span className="text-lg font-bold text-green-400">
+                          <span className="text-lg font-bold text-blue-400">
                             {Math.round(career.matchScore!)}%
                           </span>
                         </div>
@@ -670,7 +670,7 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
                           </h4>
                           <div className="flex flex-wrap gap-1.5">
                             {career.skills.map((skill, idx) => (
-                              <span key={idx} className="text-xs px-2 py-1 bg-green-900/30 text-green-300 rounded-md">
+                              <span key={idx} className="text-xs px-2 py-1 bg-blue-900/30 text-blue-300 rounded-md">
                                 {skill}
                               </span>
                             ))}
@@ -684,7 +684,7 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
                           </h4>
                           <div className="flex flex-wrap gap-1.5">
                             {career.values.map((value, idx) => (
-                              <span key={idx} className="text-xs px-2 py-1 bg-blue-900/30 text-blue-300 rounded-md">
+                              <span key={idx} className="text-xs px-2 py-1 bg-teal-900/30 text-teal-300 rounded-md">
                                 {value}
                               </span>
                             ))}
@@ -694,7 +694,7 @@ const FindPassion: React.FC<FindPassionProps> = ({ }) => {
 
                       {/* Learn More Button */}
                       <div className="mt-6 flex gap-2">
-                        <button className="flex-1 py-2 px-3 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-colors">
+                        <button className="flex-1 py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors">
                           Learn More
                         </button>
                         <button className="py-2 px-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm transition-colors">

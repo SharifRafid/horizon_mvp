@@ -1,87 +1,95 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // components/ContentLibrary.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { ExternalLink, BookOpen, FileText, Youtube, Video, MessageCircle, Book, Newspaper, RefreshCw, InfoIcon, CheckIcon } from 'lucide-react';
-import { Content } from '../utils/types';
-import Masonry from 'react-masonry-css';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { db } from '../firebase/config';
+import {
+  Youtube,
+  Video,
+  BookOpen,
+  FileText,
+  MessageCircle,
+  RefreshCw,
+  Check as CheckIcon,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  Star
+} from 'lucide-react';
 
-interface ContentLibraryProps {
-  videos?: { title: string; url: string; link: string; }[];
-  tiktoks?: { title: string; url: string; link: string; }[];
-  books?: { title: string; url: string; cover: string; }[];
-  articles?: { title: string; url: string; preview: string; }[];
+interface ContentItem {
+  id?: string;
+  title: string;
+  url: string;
+  type: string;
+  thumbnail?: string;
+  description?: string;
+  author?: string;
+  publishedAt?: string;
+  preview?: string;
+  cover?: string;
+  link?: string;
 }
 
-const ContentLibrary: React.FC<ContentLibraryProps> = ({ }) => {
-  const [activeTab, setActiveTab] = useState('all');
-  const [isLoading, setIsLoading] = useState(true);
-  const [content, setContent] = useState<Content[]>([]);
+interface ContentLibraryProps {
+  videos?: Array<any>;
+  tiktoks?: Array<any>;
+  books?: Array<any>;
+  articles?: Array<any>;
+}
+
+const ContentLibrary: React.FC<ContentLibraryProps> = ({ videos = [], tiktoks = [], books = [], articles = [] }) => {
+  // const [activeTab, setActiveTab] = useState('all');
+  const [content, setContent] = useState<ContentItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Add a personalized welcome message
-  // const [userName, setUserName] = useState("Alex"); // Get from user profile
-  const userName = "Alex"; // Get from user profile
-  
-  // Add content progress tracking
   const [completedContent, setCompletedContent] = useState<string[]>([]);
-  
-  const markAsCompleted = (contentId: string) => {
-    if (!completedContent.includes(contentId)) {
-      setCompletedContent([...completedContent, contentId]);
-      // Could save to user profile/backend here
-    }
-  };
+  const tabsContainerRef = useRef<HTMLDivElement>(null);
 
-  // Load content from Firestore on component mount
+  // Initialize content from props
   useEffect(() => {
-    loadContentFromFirestore();
-  }, []);
+    const initialContent = [
+      ...videos.map(item => ({ ...item, type: 'video', thumbnail: item.thumbnail || `https://i.ytimg.com/vi/${item.url.split('/').pop()}/hqdefault.jpg` })),
+      ...tiktoks.map(item => ({ ...item, type: 'tiktok', thumbnail: 'https://picsum.photos/300/500?random=' + Math.random() })),
+      ...books.map(item => ({ ...item, type: 'book', thumbnail: item.cover })),
+      ...articles.map(item => ({ ...item, type: 'article', thumbnail: 'https://picsum.photos/600/400?random=' + Math.random() }))
+    ];
 
-  const loadContentFromFirestore = async () => {
-    setIsLoading(true);
-    setError(null);
+    setContent(initialContent);
 
-    try {
-      const contentCollection = collection(db, 'content');
-      const contentQuery = query(contentCollection, orderBy('createdAt', 'desc'));
-      const contentSnapshot = await getDocs(contentQuery);
-      
-      if (contentSnapshot.empty) {
-        console.log('No content in Firestore, fetching from API');
-        await fetchContent();
-        return;
-      }
-      
-      const contentData = contentSnapshot.docs.map(doc => ({
-        ...doc.data() as Content
-      }));
-      
-      setContent(contentData);
-      console.log('Content loaded from Firestore:', contentData.length, 'items');
-    } catch (err) {
-      console.error('Error loading content from Firestore:', err);
-      setError('Failed to load content. Please try again later.');
-    } finally {
-      setIsLoading(false);
+    // Load completed content from localStorage
+    const savedCompleted = localStorage.getItem('completedContent');
+    if (savedCompleted) {
+      setCompletedContent(JSON.parse(savedCompleted));
     }
+  }, [videos, tiktoks, books, articles]);
+
+  // Mark content as completed
+  const markAsCompleted = (id: string) => {
+    setCompletedContent(prev => {
+      const newCompleted = prev.includes(id)
+        ? prev.filter(item => item !== id)
+        : [...prev, id];
+
+      // Save to localStorage
+      localStorage.setItem('completedContent', JSON.stringify(newCompleted));
+      return newCompleted;
+    });
   };
 
+  // Fetch content from API
   const fetchContent = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await fetch('/api/content');
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch content');
       }
 
       const data = await response.json();
-      
+
       // Combine all content types
       const allContent = [
         ...data.videos.map((item: any) => ({ ...item, type: 'video' })),
@@ -102,107 +110,149 @@ const ContentLibrary: React.FC<ContentLibraryProps> = ({ }) => {
 
   // Get content type icon
   const getContentIcon = (type: string) => {
-    switch(type) {
+    switch (type) {
       case 'video':
-        return <Youtube className="w-5 h-5" />;
+        return <Youtube className="w-4 h-4" />;
       case 'tiktok':
-        return <Video className="w-5 h-5" />;
+        return <Video className="w-4 h-4" />;
       case 'book':
-        return <BookOpen className="w-5 h-5" />;
+        return <BookOpen className="w-4 h-4" />;
       case 'article':
-        return <FileText className="w-5 h-5" />;
+        return <FileText className="w-4 h-4" />;
       default:
-        return <MessageCircle className="w-5 h-5" />;
+        return <MessageCircle className="w-4 h-4" />;
     }
   };
 
-  // Get content type color
-  const getContentColor = (type: string) => {
-    switch(type) {
-      case 'video':
-        return 'from-red-500 to-red-400';
-      case 'tiktok':
-        return 'from-blue-500 to-purple-400';
-      case 'book':
-        return 'from-amber-500 to-yellow-400';
-      case 'article':
-        return 'from-green-500 to-green-400';
-      default:
-        return 'from-gray-500 to-gray-400';
+  // Scroll tabs left
+  const scrollLeft = () => {
+    if (tabsContainerRef.current) {
+      tabsContainerRef.current.scrollBy({ left: -200, behavior: 'smooth' });
+    }
+  };
+
+  // Scroll tabs right
+  const scrollRight = () => {
+    if (tabsContainerRef.current) {
+      tabsContainerRef.current.scrollBy({ left: 200, behavior: 'smooth' });
     }
   };
 
   return (
-    <section className="py-16 bg-gradient-to-br from-gray-900 to-gray-800 min-h-screen">
-      <div className="container mx-auto px-6">
-        <motion.h1 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-4xl font-bold mb-4 text-center bg-gradient-to-r from-green-400 to-green-300 bg-clip-text text-transparent"
-        >
-          Content Library
-        </motion.h1>
-        
-        {/* Personalized welcome */}
-        <p className="text-gray-300 text-center mb-8">
-          Welcome back, {userName}! {completedContent.length > 0 ? `You've explored ${completedContent.length} resources so far.` : "Start exploring resources tailored for your journey."}
-        </p>
-        
-        {/* Progress bar if user has viewed content */}
-        {completedContent.length > 0 && (
-          <div className="mb-8 mx-auto max-w-md">
-            <div className="flex justify-between text-sm text-gray-400 mb-1">
-              <span>Progress</span>
-              <span>{Math.round((completedContent.length / content.length) * 100)}%</span>
-            </div>
-            <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-              <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: `${(completedContent.length / content.length) * 100}%` }}
-                className="h-full bg-gradient-to-r from-green-500 to-green-400"
-              />
-            </div>
-          </div>
-        )}
-        
-        {/* Test Content Message - improved visibility */}
-        {content.length === 8 && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+    <section className="py-8">
+      <div className="container mx-auto px-4">
+        {/* Animated Title */}
+        <div className="mb-16 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8 p-4 bg-blue-900/30 border border-blue-500/50 rounded-lg text-blue-300 max-w-2xl mx-auto"
+            transition={{ duration: 0.5 }}
+            className="relative inline-block"
           >
-            <p className="flex items-center gap-2">
-              <InfoIcon className="w-5 h-5 flex-shrink-0" />
-              <span>You&apos;re viewing sample content. <button onClick={fetchContent} className="text-blue-200 underline hover:text-blue-100">Click here</button> to fetch real content from our APIs.</span>
-            </p>
-          </motion.div>
-        )}
+            {/* Subtle floating elements in background */}
+            <motion.div
+              className="absolute -z-10 inset-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.8 }}
+            >
+              {/* Abstract shapes that float in background */}
+              <div className="absolute top-0 -left-16 w-12 h-12 rounded-full bg-blue-500/10"
+                style={{ animation: "float 8s ease-in-out infinite" }} />
+              <div className="absolute bottom-8 -right-10 w-8 h-8 rounded-full bg-teal-400/10"
+                style={{ animation: "float 6s ease-in-out infinite reverse" }} />
+              <div className="absolute top-10 right-0 w-4 h-4 rounded-sm bg-blue-400/10"
+                style={{ animation: "float 7s ease-in-out infinite 1s" }} />
+            </motion.div>
 
-        <div className="flex justify-between items-center mb-8">
-          <motion.h1 
+            {/* Main heading with icon */}
+            <div className="flex justify-center items-center mb-2">
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.3, duration: 0.5, type: "spring" }}
+                className="mr-3 text-blue-500"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              </motion.span>
+              <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-500 to-teal-400 bg-clip-text text-transparent relative z-10">
+                Unlock Your Potential
+              </h1>
+            </div>
+
+            {/* Animated underline */}
+            <motion.div
+              className="absolute -bottom-3 left-0 right-0 h-3 bg-gradient-to-r from-blue-500/20 to-teal-400/20 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: '100%' }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            />
+          </motion.div>
+
+          {/* Tagline with better copy */}
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-4xl font-bold mb-12 text-center bg-gradient-to-r from-green-400 to-green-300 bg-clip-text text-transparent"
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="text-gray-400 mt-6 max-w-2xl mx-auto text-lg"
           >
-            Content Library
-          </motion.h1>
-          
-          <button
-            onClick={fetchContent}
-            disabled={isLoading}
-            className={`
-              flex items-center gap-2 px-4 py-2 rounded-lg
-              ${isLoading 
-                ? 'bg-gray-600 cursor-not-allowed' 
-                : 'bg-green-500 hover:bg-green-600'}
-              text-white transition-colors
-            `}
+            Dive into our expertly curated resources that transform curiosity into mastery.
+            Join thousands already changing their future through knowledge.
+          </motion.p>
+
+          {/* Featured benefits with icons */}
+          <motion.div
+            className="grid grid-cols-3 gap-6 mt-10 max-w-3xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
           >
-            <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
-            {isLoading ? 'Fetching Content...' : 'Refresh Content'}
-          </button>
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <span className="font-medium text-gray-300">Expert-Led Content</span>
+            </div>
+
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 rounded-full bg-teal-400/10 flex items-center justify-center mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <span className="font-medium text-gray-300">Personalized Learning</span>
+            </div>
+
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <span className="font-medium text-gray-300">Community Support</span>
+            </div>
+          </motion.div>
+
+          {/* Call to action button with hover animation */}
+          <motion.div
+            className="mt-10"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+          >
+            <button className="px-8 py-3 bg-gradient-to-r from-blue-500 to-teal-400 rounded-full text-white font-medium transition-transform hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20 group">
+              Start Your Journey
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block ml-2 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          </motion.div>
         </div>
+
 
         {/* Error Message */}
         {error && (
@@ -211,256 +261,432 @@ const ContentLibrary: React.FC<ContentLibraryProps> = ({ }) => {
           </div>
         )}
 
-        {/* Content Tabs */}
-        <div className="flex flex-wrap gap-4 mb-8">
-          {[
-            { id: 'all', label: 'All', icon: null },
-            { id: 'videos', label: 'Videos', icon: <Video className="w-4 h-4" /> },
-            { id: 'tiktoks', label: 'Short Videos', icon: <Video className="w-4 h-4" /> },
-            { id: 'articles', label: 'Articles', icon: <Newspaper className="w-4 h-4" /> },
-            { id: 'books', label: 'Books', icon: <Book className="w-4 h-4" /> }
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`
-                px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200
-                ${activeTab === tab.id 
-                  ? 'bg-green-500 text-white shadow-lg shadow-green-500/20' 
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}
-              `}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        <h3 className="text-2xl font-semibold text-white mb-4">Available Content</h3>
-        <p className="text-gray-400 mb-8">Browse through our extensive library of resources tailored for your learning journey.</p>
-
         {/* Loading State */}
         {isLoading && (
           <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
-            <p className="ml-3 text-green-400">Loading content...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <p className="ml-3 text-blue-400">Loading content...</p>
           </div>
         )}
 
-        {/* Custom CSS for Masonry layout */}
-        <style jsx global>{`
-          .my-masonry-grid {
-            display: flex;
-            margin-left: -24px; /* gutter size offset */
-            width: auto;
-          }
-          .my-masonry-grid_column {
-            padding-left: 24px; /* gutter size */
-            background-clip: padding-box;
-          }
-        `}</style>
-        
-        {!isLoading && (
-          <Masonry
-            breakpointCols={{
-              default: 4,
-              1536: 4,
-              1280: 3,
-              1024: 2,
-              768: 2,
-              640: 1
-            }}
-            className="my-masonry-grid"
-            columnClassName="my-masonry-grid_column"
-          >
-            {content
-              .filter(item => {
-                if (activeTab === 'all') return true;
-                if (activeTab === 'videos') return item.type === 'video';
-                if (activeTab === 'tiktoks') return item.type === 'tiktok';
-                if (activeTab === 'articles') return item.type === 'article';
-                if (activeTab === 'books') return item.type === 'book';
-                return true;
-              })
-              .map((item, index) => (
-                <motion.div 
-                  key={(item as any).id || `${item.url}-${index}`}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                  className="mb-6 relative group bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-green-800/30"
-                >
-                  {/* Content Type Badge */}
-                  <div className={`absolute top-3 left-3 z-10 px-3 py-1 rounded-full bg-gradient-to-r ${getContentColor(item.type)} text-white text-xs font-medium flex items-center gap-1 shadow-lg`}>
-                    {getContentIcon(item.type)}
-                    <span className="capitalize">{item.type}</span>
+        {/* Featured Content */}
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center">
+              <Star className="w-5 h-5 text-yellow-400 mr-2" />
+              <h2 className="text-2xl font-semibold bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
+                Featured Content
+              </h2>
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => fetchContent()}
+                className="bg-gray-800 hover:bg-gray-700 text-gray-300 p-2 rounded-full transition-colors"
+                aria-label="Refresh content"
+              >
+                <RefreshCw className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {content.map((item, index) => (
+              <motion.div
+                key={item.id || `${item.type}-${index}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1, duration: 0.3 }}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl overflow-hidden shadow-lg border border-gray-700 group"
+              >
+                <div className="relative h-40">
+                  <img
+                    src={item.thumbnail || 'https://picsum.photos/600/400?random=' + Math.random()}
+                    alt={item.title}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-70"></div>
+                  <div className="absolute bottom-0 left-0 right-0 p-3">
+                    <div className="flex items-center">
+                      <span className="bg-blue-500/80 text-white text-xs px-2 py-1 rounded-full flex items-center">
+                        {getContentIcon(item.type)}
+                        <span className="ml-1 capitalize">{item.type}</span>
+                      </span>
+                      {completedContent.includes(item.id || item.title) && (
+                        <span className="ml-2 bg-green-500/80 text-white text-xs px-2 py-1 rounded-full flex items-center">
+                          <CheckIcon className="w-3 h-3 mr-1" />
+                          Completed
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  
-                  {/* Video Content */}
-                  {item.type === 'video' && (
-                    <div className="flex flex-col h-full">
-                      <div className="relative w-full pt-[56.25%]">
-                        <img 
-                          src={item.thumbnail}
-                          className="absolute top-0 left-0 w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                          <a 
-                            href={item.url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-600 transition-colors"
-                          >
-                            <Youtube className="w-5 h-5" />
-                            Watch Video
-                          </a>
-                        </div>
-                      </div>
-                      <div className="p-4 flex flex-col flex-grow">
-                        <div className="flex justify-between items-start">
-                          <h3 className="text-lg font-medium text-green-200 mb-2 line-clamp-2">{item.title}</h3>
-                          {completedContent.includes(item.title) && (
-                            <div className="bg-green-500/20 p-1 rounded-full">
-                              <CheckIcon className="w-4 h-4 text-green-400" />
-                            </div>
-                          )}
-                        </div>
-                        <p className="text-gray-400 text-sm line-clamp-3 mb-4">{item.description}</p>
-                        <span className="text-gray-500 text-xs mt-auto">
-                          {item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : 'Unknown Date'}
-                        </span>
-                        <button 
-                          onClick={() => markAsCompleted(item.title)}
-                          className="mt-2 text-xs text-green-400 hover:text-green-300 self-end"
-                        >
-                          {completedContent.includes(item.title) ? "Completed ✓" : "Mark as completed"}
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                </div>
+                <div className="p-4">
+                  <h3 className="text-lg font-medium text-white mb-2 line-clamp-2">{item.title}</h3>
+                  <div className="flex justify-between items-center mt-3">
+                    <a
+                      href={item.url || item.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:text-blue-300 text-sm flex items-center"
+                    >
+                      <ExternalLink className="w-3 h-3 mr-1" />
+                      View
+                    </a>
+                    <button
+                      onClick={() => markAsCompleted(item.id || item.title)}
+                      className="text-xs text-gray-400 hover:text-blue-300"
+                    >
+                      {completedContent.includes(item.id || item.title) ? "Completed" : "Mark Complete"}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
 
-                  {/* TikTok/Short Video Content */}
-                  {item.type === 'tiktok' && (
-                    <div className="flex flex-col h-full">
-                      <div className="relative w-full pt-[177.78%]"> {/* 16:9 aspect ratio */}
-                        <img 
-                          src={item.thumbnail}
-                          className="absolute top-0 left-0 w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                          <a 
-                            href={item.url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600 transition-colors"
-                          >
-                            <Video className="w-5 h-5" />
-                            Watch Short
-                          </a>
-                        </div>
-                      </div>
-                      <div className="p-4 flex flex-col flex-grow">
-                        <div className="flex justify-between items-start">
-                          <h3 className="text-lg font-medium text-blue-200 mb-2 line-clamp-2">{item.title}</h3>
-                          {completedContent.includes(item.id || item.title) && (
-                            <div className="bg-blue-500/20 p-1 rounded-full">
-                              <CheckIcon className="w-4 h-4 text-blue-400" />
-                            </div>
-                          )}
-                        </div>
-                        <p className="text-gray-400 text-sm line-clamp-3 mb-4">{item.description}</p>
-                        <span className="text-gray-500 text-xs mt-auto">
-                          {item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : 'Unknown Date'}
-                        </span>
-                        <button 
-                          onClick={() => markAsCompleted(item.id || item.title)}
-                          className="mt-2 text-xs text-blue-400 hover:text-blue-300 self-end"
-                        >
-                          {completedContent.includes(item.id || item.title) ? "Completed ✓" : "Mark as completed"}
-                        </button>
-                      </div>
-                    </div>
-                  )}
+        {/* Videos Carousel */}
+        {content.filter(item => item.type === 'video').length > 0 && (
+          <div className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-semibold bg-gradient-to-r from-blue-500 to-teal-400 bg-clip-text text-transparent flex items-center">
+                <Youtube className="w-6 h-6 mr-2 text-blue-500" />
+                Videos
+              </h2>
+              <div className="flex space-x-2">
+                <button
+                  onClick={scrollLeft}
+                  className="bg-gray-800 hover:bg-gray-700 text-gray-300 p-2 rounded-full transition-colors"
+                  aria-label="Scroll left"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={scrollRight}
+                  className="bg-gray-800 hover:bg-gray-700 text-gray-300 p-2 rounded-full transition-colors"
+                  aria-label="Scroll right"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
 
-                  {/* Article Content */}
-                  {item.type === 'article' && (
-                    <div className="flex flex-col h-full">
-                      <div className="p-6">
-                        <h3 className="text-lg font-medium text-green-200 mb-3 line-clamp-2 mt-8">{item.title}</h3>
-                        <p className="text-gray-400 text-sm mb-4 line-clamp-3">{item.description}</p>
-                        <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-700">
-                          <span className="text-gray-500 text-xs">
-                            {item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : 'Unknown Date'}
-                          </span>
-                          <a 
-                            href={item.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-green-400 flex items-center gap-2 text-sm hover:text-green-300 transition-colors"
-                          >
-                            Read More
-                            <ExternalLink className="w-4 h-4" />
-                          </a>
-                        </div>
+            <div
+              ref={tabsContainerRef}
+              className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide snap-x"
+            >
+              {content.filter(item => item.type === 'video').map((item, index) => (
+                <motion.div
+                  key={item.id || `video-${index}`}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05, duration: 0.3 }}
+                  whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                  className="flex-shrink-0 w-64 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl overflow-hidden shadow-lg border border-gray-700 group snap-start"
+                >
+                  <div className="relative pt-[56.25%]">
+                    <img
+                      src={item.thumbnail}
+                      alt={item.title}
+                      className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="bg-blue-500/80 text-white rounded-full p-3 transform scale-75 group-hover:scale-100 transition-transform">
+                        <Youtube className="w-6 h-6" />
                       </div>
                     </div>
-                  )}
-
-                  {/* Book Content */}
-                  {item.type === 'book' && (
-                    <div className="flex flex-col h-full">
-                      <div className="relative pt-[140%]">
-                        <img 
-                          src={item.thumbnail}
-                          className="absolute top-0 left-0 w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
-                          <div className="absolute bottom-0 left-0 right-0 p-4">
-                            <a 
-                              href={item.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="bg-green-500 text-white w-full py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-green-600 transition-colors"
-                            >
-                              <BookOpen className="w-5 h-5" />
-                              View Book
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="p-4">
-                        <h3 className="text-lg font-medium text-green-200 mb-2 line-clamp-2">{item.title}</h3>
-                        <p className="text-gray-400 text-sm mb-2">{item.author}</p>
-                        <span className="text-gray-500 text-xs">
-                          Published: {item.publishedAt}
-                        </span>
-                      </div>
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-sm font-medium text-white mb-2 line-clamp-2">{item.title}</h3>
+                    <div className="flex justify-between items-center mt-2">
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-300 text-xs flex items-center"
+                      >
+                        Watch Video
+                      </a>
+                      <button
+                        onClick={() => markAsCompleted(item.id || item.title)}
+                        className="text-xs text-gray-400 hover:text-blue-300"
+                      >
+                        {completedContent.includes(item.id || item.title) ? "✓" : "Mark"}
+                      </button>
                     </div>
-                  )}
+                  </div>
                 </motion.div>
               ))}
-          </Masonry>
+            </div>
+          </div>
+        )}
+
+        {/* Short Videos Carousel */}
+        {content.filter(item => item.type === 'tiktok').length > 0 && (
+          <div className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-semibold bg-gradient-to-r from-blue-500 to-teal-400 bg-clip-text text-transparent flex items-center">
+                <Video className="w-6 h-6 mr-2 text-blue-500" />
+                Short Videos
+              </h2>
+              <div className="flex space-x-2">
+                <button
+                  onClick={scrollLeft}
+                  className="bg-gray-800 hover:bg-gray-700 text-gray-300 p-2 rounded-full transition-colors"
+                  aria-label="Scroll left"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={scrollRight}
+                  className="bg-gray-800 hover:bg-gray-700 text-gray-300 p-2 rounded-full transition-colors"
+                  aria-label="Scroll right"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div
+              ref={tabsContainerRef}
+              className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide snap-x"
+            >
+              {content.filter(item => item.type === 'tiktok').map((item, index) => (
+                <motion.div
+                  key={item.id || `tiktok-${index}`}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05, duration: 0.3 }}
+                  whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                  className="flex-shrink-0 w-48 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl overflow-hidden shadow-lg border border-gray-700 group snap-start"
+                >
+                  <div className="relative pt-[177%]">
+                    <img
+                      src={item.thumbnail}
+                      alt={item.title}
+                      className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="bg-blue-500/80 text-white rounded-full p-3 transform scale-75 group-hover:scale-100 transition-transform">
+                        <Video className="w-6 h-6" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <h3 className="text-sm font-medium text-white mb-2 line-clamp-1">{item.title}</h3>
+                    <div className="flex justify-between items-center">
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-300 text-xs flex items-center"
+                      >
+                        Watch
+                      </a>
+                      <button
+                        onClick={() => markAsCompleted(item.id || item.title)}
+                        className="text-xs text-gray-400 hover:text-blue-300"
+                      >
+                        {completedContent.includes(item.id || item.title) ? "✓" : "Mark"}
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Books Carousel */}
+        {content.filter(item => item.type === 'book').length > 0 && (
+          <div className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-semibold bg-gradient-to-r from-blue-500 to-teal-400 bg-clip-text text-transparent flex items-center">
+                <BookOpen className="w-6 h-6 mr-2 text-blue-500" />
+                Books
+              </h2>
+              <div className="flex space-x-2">
+                <button
+                  onClick={scrollLeft}
+                  className="bg-gray-800 hover:bg-gray-700 text-gray-300 p-2 rounded-full transition-colors"
+                  aria-label="Scroll left"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={scrollRight}
+                  className="bg-gray-800 hover:bg-gray-700 text-gray-300 p-2 rounded-full transition-colors"
+                  aria-label="Scroll right"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div
+              ref={tabsContainerRef}
+              className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide snap-x"
+            >
+              {content.filter(item => item.type === 'book').map((item, index) => (
+                <motion.div
+                  key={item.id || `book-${index}`}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05, duration: 0.3 }}
+                  whileHover={{
+                    y: -5,
+                    boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.3)",
+                    transition: { duration: 0.2 }
+                  }}
+                  className="flex-shrink-0 w-40 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl overflow-hidden shadow-lg border border-gray-700 group snap-start"
+                >
+                  <div className="relative pt-[140%]">
+                    <img
+                      src={item.thumbnail}
+                      alt={item.title}
+                      className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-0 group-hover:opacity-70 transition-opacity">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-blue-500/90 text-white px-3 py-2 rounded-lg text-xs opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-4 group-hover:translate-y-0"
+                        >
+                          View Book
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <h3 className="text-sm font-medium text-white mb-1 line-clamp-1">{item.title}</h3>
+                    <p className="text-gray-400 text-xs mb-2 line-clamp-1">{item.author}</p>
+                    <button
+                      onClick={() => markAsCompleted(item.id || item.title)}
+                      className="text-xs text-gray-400 hover:text-blue-300 w-full text-left"
+                    >
+                      {completedContent.includes(item.id || item.title) ? "Completed ✓" : "Mark as read"}
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Articles Carousel */}
+        {content.filter(item => item.type === 'article').length > 0 && (
+          <div className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-semibold bg-gradient-to-r from-blue-500 to-teal-400 bg-clip-text text-transparent flex items-center">
+                <FileText className="w-6 h-6 mr-2 text-blue-500" />
+                Articles
+              </h2>
+              <div className="flex space-x-2">
+                <button
+                  onClick={scrollLeft}
+                  className="bg-gray-800 hover:bg-gray-700 text-gray-300 p-2 rounded-full transition-colors"
+                  aria-label="Scroll left"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={scrollRight}
+                  className="bg-gray-800 hover:bg-gray-700 text-gray-300 p-2 rounded-full transition-colors"
+                  aria-label="Scroll right"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div
+              ref={tabsContainerRef}
+              className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide snap-x"
+            >
+              {content.filter(item => item.type === 'article').map((item, index) => (
+                <motion.div
+                  key={item.id || `article-${index}`}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05, duration: 0.3 }}
+                  whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                  className="flex-shrink-0 w-72 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl overflow-hidden shadow-lg border border-gray-700 group snap-start"
+                >
+                  <div className="relative h-32">
+                    <img
+                      src={item.thumbnail}
+                      alt={item.title}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-70"></div>
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-sm font-medium text-white mb-2 line-clamp-2">{item.title}</h3>
+                    <p className="text-gray-400 text-xs mb-3 line-clamp-2">{item.preview}</p>
+                    <div className="flex justify-between items-center">
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-300 text-xs flex items-center"
+                      >
+                        Read Article
+                      </a>
+                      <button
+                        onClick={() => markAsCompleted(item.id || item.title)}
+                        className="text-xs text-gray-400 hover:text-blue-300"
+                      >
+                        {completedContent.includes(item.id || item.title) ? "✓" : "Mark"}
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* Empty State */}
         {content.length === 0 && !isLoading && (
           <div className="text-center py-12">
-            <p className="text-gray-400 text-lg mb-4">
-              No content available. Click the refresh button to fetch latest content.
-            </p>
-            <button
-              onClick={fetchContent}
-              className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium shadow-lg flex items-center gap-2 mx-auto"
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
             >
-              <RefreshCw className="w-5 h-5" />
-              Fetch Content
-            </button>
+              <p className="text-gray-400 text-lg mb-4">
+                No content available. Click the refresh button to fetch latest content.
+              </p>
+              <button
+                onClick={fetchContent}
+                className="bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 text-white px-6 py-3 rounded-lg font-medium shadow-lg flex items-center gap-2 mx-auto"
+              >
+                <RefreshCw className="w-5 h-5" />
+                Fetch Content
+              </button>
+            </motion.div>
           </div>
         )}
       </div>
+
+      {/* Custom CSS for scrollbar hiding */}
+      <style jsx global>{`
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .scrollbar-hide {
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
+        }
+      `}</style>
     </section>
   );
 };

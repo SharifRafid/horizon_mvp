@@ -347,17 +347,17 @@ const ProfilePage: React.FC = () => {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gray-800 rounded-xl shadow-lg p-6 border border-green-800/30 max-w-md w-full mx-auto"
+        className="w-full bg-gray-800 rounded-lg border border-blue-800/30 p-4"
       >
-        <div className="text-center mb-8">
+        <div className="text-center mb-4">
           <motion.h2 
-            className="text-3xl font-bold bg-gradient-to-r from-green-400 to-green-300 bg-clip-text text-transparent"
+            className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-teal-400 bg-clip-text text-transparent"
             initial={{ y: -20 }}
             animate={{ y: 0 }}
           >
             {authMode === 'login' ? 'Welcome Back' : 'Join Inspire'}
           </motion.h2>
-          <p className="text-gray-400 mt-2">
+          <p className="text-gray-400 text-base mt-1">
             {authMode === 'login' 
               ? 'Sign in to continue your journey' 
               : 'Create an account to start making a difference'}
@@ -365,12 +365,12 @@ const ProfilePage: React.FC = () => {
         </div>
         
         {error && (
-          <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-lg text-red-300 text-sm">
+          <div className="mb-3 p-2 bg-red-500/20 border border-red-500/30 rounded-lg text-red-300 text-sm">
             {error}
           </div>
         )}
         
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
           {authMode === 'signup' && (
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
@@ -379,7 +379,7 @@ const ProfilePage: React.FC = () => {
                 placeholder="Full Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-gray-700 border border-green-800/30 rounded-lg py-3 px-4 pl-10 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-gray-700 border border-blue-800/30 rounded-lg py-2.5 px-4 pl-10 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
             </div>
@@ -392,7 +392,7 @@ const ProfilePage: React.FC = () => {
               placeholder="Email Address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-gray-700 border border-green-800/30 rounded-lg py-3 px-4 pl-10 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full bg-gray-700 border border-blue-800/30 rounded-lg py-2.5 px-4 pl-10 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
@@ -404,7 +404,7 @@ const ProfilePage: React.FC = () => {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-gray-700 border border-green-800/30 rounded-lg py-3 px-4 pl-10 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full bg-gray-700 border border-blue-800/30 rounded-lg py-2.5 px-4 pl-10 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
             <button 
@@ -418,13 +418,13 @@ const ProfilePage: React.FC = () => {
           
           {authMode === 'login' && (
             <div className="text-right">
-              <a href="#" className="text-sm text-green-400 hover:text-green-300">Forgot password?</a>
+              <a href="#" className="text-sm text-blue-400 hover:text-blue-300">Forgot password?</a>
             </div>
           )}
           
           <motion.button
             type="submit"
-            className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-lg font-medium shadow-lg disabled:opacity-70"
+            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2.5 rounded-lg font-medium shadow-lg text-base disabled:opacity-70"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             disabled={isSubmitting || loading}
@@ -438,25 +438,25 @@ const ProfilePage: React.FC = () => {
           </motion.button>
         </form>
         
-        <div className="mt-6 text-center">
-          <p className="text-gray-400">
+        <div className="mt-3 text-center">
+          <p className="text-gray-400 text-sm">
             {authMode === 'login' ? "Don't have an account? " : "Already have an account? "}
             <button 
               onClick={() => {
                 setAuthMode(authMode === 'login' ? 'signup' : 'login');
                 setError('');
               }}
-              className="text-green-400 hover:text-green-300 font-medium"
+              className="text-blue-400 hover:text-blue-300 font-medium"
             >
               {authMode === 'login' ? 'Sign Up' : 'Sign In'}
             </button>
           </p>
         </div>
         
-        <div className="mt-8 pt-6 border-t border-green-800/30">
+        <div className="mt-4 pt-3 border-t border-blue-800/30">
           <button 
             onClick={() => router.push('/')}
-            className="text-gray-400 hover:text-green-400 text-sm flex items-center justify-center w-full"
+            className="text-gray-400 hover:text-blue-400 text-sm flex items-center justify-center w-full"
           >
             Continue as guest <ChevronRight className="w-4 h-4 ml-1" />
           </button>
@@ -468,9 +468,9 @@ const ProfilePage: React.FC = () => {
   // Render profile
   const renderProfile = () => {
     if (loading || !userProfile) return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
-        <p className="ml-3 text-green-400">Loading your profile...</p>
+      <div className="flex justify-center items-center h-24">
+        <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
+        <p className="ml-2 text-blue-400 text-base">Loading profile...</p>
       </div>
     );
     
@@ -484,61 +484,92 @@ const ProfilePage: React.FC = () => {
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="w-full max-w-4xl mx-auto px-4"
+        className="w-full"
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="space-y-3">
           {/* Profile Card */}
           <motion.div 
-            initial={{ y: 20, opacity: 0 }}
+            initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-green-800/30"
+            className="bg-gray-800 rounded-lg shadow-lg overflow-hidden border border-blue-800/30"
           >
-            <div className="bg-gradient-to-r from-green-600 to-green-500 h-24 relative">
-              <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2">
-                <div className="w-24 h-24 rounded-full border-4 border-gray-800 overflow-hidden">
-                  <img src={userProfile.avatar} alt={userProfile.name} className="w-full h-full object-cover" />
-                </div>
+            <div className="bg-gradient-to-r from-blue-600 to-blue-500 h-20 relative">
+              {/* Profile Avatar */}
+              <div className="absolute -bottom-10 left-4 w-20 h-20 rounded-full border-4 border-gray-800 overflow-hidden">
+                <img 
+                  src={userProfile.avatar} 
+                  alt={userProfile.name} 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              
+              {/* Points Badge */}
+              <div className="absolute top-4 right-4 bg-gray-900/80 rounded-full px-3 py-1 flex items-center">
+                <Trophy className="w-4 h-4 text-yellow-400 mr-1" />
+                <span className="text-white font-bold text-sm">{userProfile.score} pts</span>
               </div>
             </div>
             
-            <div className="pt-16 pb-6 px-6 text-center">
-              <h2 className="text-xl font-bold text-white">{userProfile.name}</h2>
-              <p className="text-gray-400 text-sm">{userProfile.email}</p>
+            <div className="pt-12 pb-4 px-4">
+              {/* User Info */}
+              <div className="mb-4">
+                <h2 className="text-xl font-bold text-white">{userProfile.name}</h2>
+                <p className="text-gray-400 text-sm flex items-center">
+                  <Mail className="w-4 h-4 mr-1" /> {userProfile.email}
+                </p>
+                
+                {userProfile.location && (
+                  <p className="text-gray-400 text-sm flex items-center mt-1">
+                    <MapPin className="w-4 h-4 mr-1" /> 
+                    {`${userProfile.location.latitude.toFixed(2)}, ${userProfile.location.longitude.toFixed(2)}`}
+                  </p>
+                )}
+              </div>
               
-              <div className="mt-4 flex justify-center">
-                <div className="bg-gray-700/50 rounded-full px-4 py-1 flex items-center">
-                  <Trophy className="w-4 h-4 text-green-400 mr-2" />
-                  <span className="text-green-300">{userProfile.score} points</span>
+              {/* Badges */}
+              <div className="mb-4">
+                <h3 className="text-base font-bold text-blue-400 mb-2">Badges</h3>
+                <div className="flex flex-wrap gap-2">
+                  {userProfile.badges.map((badge, index) => (
+                    <motion.div 
+                      key={index}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="bg-gray-700/50 rounded-lg px-2 py-1 flex items-center"
+                    >
+                      <span className="mr-1 text-lg">{badge.icon}</span>
+                      <span className="text-sm text-gray-300">{badge.name}</span>
+                    </motion.div>
+                  ))}
                 </div>
               </div>
               
-              <div className="mt-6 flex justify-center space-x-2">
-                {userProfile.badges.map((badge, index) => (
+              {/* Recent Activities */}
+              <div className="mb-4">
+                <h3 className="text-base font-bold text-blue-400 mb-2">Recent Activity</h3>
+                {userProfile.activities.slice(0, 2).map((activity, index) => (
                   <motion.div 
                     key={index}
-                    whileHover={{ y: -3 }}
-                    className="bg-gray-700 rounded-lg p-2 tooltip-container relative group"
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: index * 0.1 + 0.2 }}
+                    className="bg-gray-700/50 rounded-lg p-2 mb-2 flex items-start"
                   >
-                    <div className="text-green-400">
-                      {badge.icon}
+                    <div className="bg-blue-500/20 rounded-full p-1.5 mr-2">
+                      <Heart className="w-4 h-4 text-blue-400" />
                     </div>
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                      {badge.name}
+                    <div>
+                      <p className="text-white text-sm">
+                        <span className="text-blue-300">{activity.action}</span> {activity.target}
+                      </p>
+                      <p className="text-gray-400 text-xs">{activity.date}</p>
                     </div>
                   </motion.div>
                 ))}
               </div>
               
-              {userProfile.location && (
-                <div className="mt-4 flex justify-center">
-                  <div className="bg-gray-700/50 rounded-full px-4 py-1 flex items-center text-sm">
-                    <MapPin className="w-3 h-3 text-green-400 mr-2" />
-                    <span className="text-gray-300">Location saved</span>
-                  </div>
-                </div>
-              )}
-              
-              <div className="mt-6 pt-6 border-t border-green-800/30">
+              <div className="mt-3 pt-2 border-t border-blue-800/30">
                 <div className="flex justify-between text-sm">
                   <div>
                     <p className="text-gray-400">Joined</p>
@@ -551,14 +582,14 @@ const ProfilePage: React.FC = () => {
                 </div>
               </div>
               
-              <div className="mt-6">
+              <div className="mt-3">
                 <motion.button
                   onClick={handleLogout}
-                  className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-medium flex items-center justify-center"
+                  className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-medium flex items-center justify-center text-base"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <LogOut className="w-4 h-4 mr-2" /> Sign Out
+                  <LogOut className="w-4 h-4 mr-1" /> Sign Out
                 </motion.button>
               </div>
             </div>
@@ -566,122 +597,89 @@ const ProfilePage: React.FC = () => {
           
           {/* Activity Feed */}
           <motion.div 
-            initial={{ y: 20, opacity: 0 }}
+            initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="bg-gray-800 rounded-xl shadow-lg p-6 border border-green-800/30 md:col-span-2"
+            className="bg-gray-800 rounded-lg shadow-lg p-4 border border-blue-800/30"
           >
-            <h3 className="text-xl font-bold text-green-400 mb-4 flex items-center">
-              <Activity className="w-5 h-5 mr-2" /> Recent Activity
+            <h3 className="text-base font-bold text-blue-400 mb-2 flex items-center">
+              <Activity className="w-5 h-5 mr-1" /> Recent Activity
             </h3>
             
-            <div className="space-y-4">
+            <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
               {userProfile.activities.length > 0 ? (
                 userProfile.activities.map((activity, index) => (
                   <motion.div 
                     key={index}
-                    initial={{ x: -20, opacity: 0 }}
+                    initial={{ x: -10, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: index * 0.1 + 0.2 }}
-                    className="bg-gray-700/50 rounded-lg p-4 flex items-start"
+                    transition={{ delay: index * 0.05 + 0.2 }}
+                    className="bg-gray-700/50 rounded-lg p-2.5 flex items-start"
                   >
-                    <div className="bg-green-500/20 rounded-full p-2 mr-3">
-                      <Heart className="w-4 h-4 text-green-400" />
+                    <div className="bg-blue-500/20 rounded-full p-1.5 mr-2">
+                      <Heart className="w-4 h-4 text-blue-400" />
                     </div>
                     <div>
-                      <p className="text-white">
-                        <span className="text-green-300">{activity.action}</span> {activity.target}
+                      <p className="text-white text-sm">
+                        <span className="text-blue-300">{activity.action}</span> {activity.target}
                       </p>
-                      <p className="text-gray-400 text-sm">{activity.date}</p>
+                      <p className="text-gray-400 text-xs">{activity.date}</p>
                     </div>
                   </motion.div>
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-400">
-                  No activities yet. Start exploring to create some!
+                <div className="text-center py-2 text-gray-400 text-sm">
+                  No activities yet. Start exploring!
                 </div>
               )}
             </div>
             
-            <div className="mt-6">
-              <h3 className="text-xl font-bold text-green-400 mb-4 flex items-center">
-                <Award className="w-5 h-5 mr-2" /> Progress
+            <div className="mt-3 pt-2 border-t border-blue-800/30">
+              <h3 className="text-base font-bold text-blue-400 mb-2 flex items-center">
+                <Award className="w-5 h-5 mr-1" /> Progress
               </h3>
               
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-gray-300">Level Progress</span>
-                    <span className="text-green-300">
-                      {levelProgress.toFixed(0)}% ({pointsForNextLevel} points to level {userProfile.level + 1})
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2.5">
-                    <motion.div 
-                      className="bg-gradient-to-r from-green-500 to-green-400 h-2.5 rounded-full"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${levelProgress}%` }}
-                      transition={{ duration: 1, delay: 0.5 }}
-                    />
-                  </div>
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-gray-300 text-sm">Level Progress</span>
+                  <span className="text-blue-300 text-sm">
+                    {levelProgress.toFixed(0)}% ({pointsForNextLevel} to level {userProfile.level + 1})
+                  </span>
                 </div>
-                
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-gray-300">Monthly Goal</span>
-                    <span className="text-green-300">40%</span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2.5">
-                    <motion.div 
-                      className="bg-gradient-to-r from-green-500 to-green-400 h-2.5 rounded-full"
-                      initial={{ width: 0 }}
-                      animate={{ width: "40%" }}
-                      transition={{ duration: 1, delay: 0.7 }}
-                    />
-                  </div>
+                <div className="w-full bg-gray-700 rounded-full h-2">
+                  <motion.div 
+                    className="bg-gradient-to-r from-blue-500 to-teal-400 h-2 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${levelProgress}%` }}
+                    transition={{ duration: 1, delay: 0.5 }}
+                  />
                 </div>
               </div>
             </div>
           </motion.div>
           
-          {/* Settings Card */}
+          {/* Settings Card - Simplified for popup */}
           <motion.div 
-            initial={{ y: 20, opacity: 0 }}
+            initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="bg-gray-800 rounded-xl shadow-lg p-6 border border-green-800/30 md:col-span-3"
+            className="bg-gray-800 rounded-lg shadow-lg p-4 border border-blue-800/30"
           >
-            <h3 className="text-xl font-bold text-green-400 mb-4 flex items-center">
-              <Settings className="w-5 h-5 mr-2" /> Settings
+            <h3 className="text-base font-bold text-blue-400 mb-2 flex items-center">
+              <Settings className="w-5 h-5 mr-1" /> Quick Settings
             </h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-gray-700/50 rounded-lg p-4">
-                <h4 className="text-white font-medium mb-2">Notification Preferences</h4>
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input type="checkbox" className="form-checkbox bg-gray-600 border-gray-500 rounded text-green-500 focus:ring-green-500" defaultChecked />
-                    <span className="ml-2 text-gray-300">Email notifications</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input type="checkbox" className="form-checkbox bg-gray-600 border-gray-500 rounded text-green-500 focus:ring-green-500" defaultChecked />
-                    <span className="ml-2 text-gray-300">Push notifications</span>
-                  </label>
-                </div>
-              </div>
-              
-              <div className="bg-gray-700/50 rounded-lg p-4">
-                <h4 className="text-white font-medium mb-2">Privacy Settings</h4>
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input type="checkbox" className="form-checkbox bg-gray-600 border-gray-500 rounded text-green-500 focus:ring-green-500" defaultChecked />
-                    <span className="ml-2 text-gray-300">Show profile to others</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input type="checkbox" className="form-checkbox bg-gray-600 border-gray-500 rounded text-green-500 focus:ring-green-500" />
-                    <span className="ml-2 text-gray-300">Share activity publicly</span>
-                  </label>
-                </div>
+            <div className="bg-gray-700/50 rounded-lg p-3">
+              <h4 className="text-white font-medium mb-2 text-sm">Notification Preferences</h4>
+              <div className="space-y-2">
+                <label className="flex items-center">
+                  <input type="checkbox" className="form-checkbox bg-gray-600 border-gray-500 rounded text-blue-500 focus:ring-blue-500 h-4 w-4" defaultChecked />
+                  <span className="ml-2 text-gray-300 text-sm">Email notifications</span>
+                </label>
+                <label className="flex items-center">
+                  <input type="checkbox" className="form-checkbox bg-gray-600 border-gray-500 rounded text-blue-500 focus:ring-blue-500 h-4 w-4" defaultChecked />
+                  <span className="ml-2 text-gray-300 text-sm">Push notifications</span>
+                </label>
               </div>
             </div>
           </motion.div>
@@ -691,12 +689,12 @@ const ProfilePage: React.FC = () => {
   };
   
   return (
-    <section id="profile" className="py-16 bg-gradient-to-br from-gray-900 to-gray-800 min-h-screen">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="w-full h-full bg-gray-900 rounded-lg overflow-hidden">
+      <div className="p-4 max-h-[90vh] overflow-y-auto">
         <motion.h1 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-4xl font-bold mb-12 text-center bg-gradient-to-r from-green-400 to-green-300 bg-clip-text text-transparent"
+          className="text-2xl font-bold mb-4 text-center bg-gradient-to-r from-blue-500 to-teal-400 bg-clip-text text-transparent"
         >
           {loading 
             ? 'Loading...' 
@@ -710,9 +708,9 @@ const ProfilePage: React.FC = () => {
         <AnimatePresence mode="wait">
           {authMode === 'profile' ? (
             loading || !userProfile ? (
-              <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
-                <p className="ml-3 text-green-400">Loading your profile...</p>
+              <div className="flex justify-center items-center h-24 bg-gray-800 rounded-lg border border-blue-800/30 p-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
+                <p className="ml-2 text-blue-400 text-base">Loading profile...</p>
               </div>
             ) : (
               renderProfile()
@@ -722,7 +720,7 @@ const ProfilePage: React.FC = () => {
           )}
         </AnimatePresence>
       </div>
-    </section>
+    </div>
   );
 };
 

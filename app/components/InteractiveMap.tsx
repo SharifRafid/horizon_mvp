@@ -29,8 +29,8 @@ const createMarkerIcon = (color: string) => new L.Icon({
   className: 'marker-icon',
 });
 
-const userIcon = createMarkerIcon('ef4444'); // Red for user
-const otherUserIcon = createMarkerIcon('22c55e'); // Green for others
+const userIcon = createMarkerIcon('3b82f6'); // Blue for user (matching navbar)
+const otherUserIcon = createMarkerIcon('14b8a6'); // Teal for others (matching navbar)
 
 // Component to handle map center updates
 const MapCenterHandler = ({ center }: { center: [number, number] }) => {
@@ -57,11 +57,8 @@ const InteractiveMap: React.FC<InteractiveMapProps> = () => {
   const [connections, setConnections] = useState<number[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
   
-  // Default location (India)
-  const defaultLocation: Location = {
-    lat: 20.5937,
-    lng: 78.9629
-  };
+  // Default location (San Francisco)
+  const defaultLocation = { lat: 37.7749, lng: -122.4194 };
 
   useEffect(() => {
     // Listen for auth state changes
@@ -194,7 +191,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = () => {
         <motion.h1 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-4xl font-bold mb-6 text-center bg-gradient-to-r from-green-400 to-green-300 bg-clip-text text-transparent"
+          className="text-4xl font-bold mb-6 text-center bg-gradient-to-r from-blue-500 to-teal-400 bg-clip-text text-transparent"
         >
           Connect with Others
         </motion.h1>
@@ -210,31 +207,31 @@ const InteractiveMap: React.FC<InteractiveMapProps> = () => {
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-gray-800 rounded-xl p-6 border border-green-800/30 shadow-lg"
+              className="bg-gray-800 rounded-xl p-6 border border-blue-500/30 shadow-lg"
             >
-              <h2 className="text-xl font-bold text-green-400 mb-4">Your Network</h2>
+              <h2 className="text-xl font-bold text-blue-400 mb-4">Your Network</h2>
               
               <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="text-center p-4 bg-gray-700/50 rounded-lg">
-                  <p className="text-3xl font-bold text-green-400">{nearbyPeople.length}</p>
+                  <p className="text-3xl font-bold text-blue-400">{nearbyPeople.length}</p>
                   <p className="text-sm text-gray-400">Nearby</p>
                 </div>
                 <div className="text-center p-4 bg-gray-700/50 rounded-lg">
-                  <p className="text-3xl font-bold text-green-400">{connections.length}</p>
+                  <p className="text-3xl font-bold text-blue-400">{connections.length}</p>
                   <p className="text-sm text-gray-400">Connected</p>
                 </div>
                 <div className="text-center p-4 bg-gray-700/50 rounded-lg">
-                  <p className="text-3xl font-bold text-green-400">{connectionRequests.length}</p>
+                  <p className="text-3xl font-bold text-blue-400">{connectionRequests.length}</p>
                   <p className="text-sm text-gray-400">Pending</p>
                 </div>
               </div>
               
               {!currentUser && (
                 <div className="bg-gray-700/50 p-4 rounded-lg text-center">
-                  <p className="text-green-400 mb-3">Sign in to save your location and connect with others</p>
+                  <p className="text-blue-400 mb-3">Sign in to save your location and connect with others</p>
                   <button 
                     onClick={() => window.location.href = '#profile'}
-                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors text-sm w-full"
+                    className="bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 text-white px-4 py-2 rounded-lg transition-colors text-sm w-full"
                   >
                     Sign In / Create Account
                   </button>
@@ -247,14 +244,14 @@ const InteractiveMap: React.FC<InteractiveMapProps> = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-gray-800 rounded-xl p-6 border border-green-800/30 shadow-lg"
+              className="bg-gray-800 rounded-xl p-6 border border-blue-500/30 shadow-lg"
             >
-              <h2 className="text-xl font-bold text-green-400 mb-4">People Nearby</h2>
+              <h2 className="text-xl font-bold text-blue-400 mb-4">People Nearby</h2>
               
               {isLoadingUsers ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mr-2"></div>
-                  <span className="text-green-400">Finding people...</span>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mr-2"></div>
+                  <span className="text-blue-400">Finding people...</span>
                 </div>
               ) : nearbyPeople.length > 0 ? (
                 <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
@@ -264,7 +261,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = () => {
                       className="bg-gray-700/50 rounded-lg p-3 flex items-center gap-3 hover:bg-gray-700 transition-colors cursor-pointer"
                       onClick={() => setSelectedPerson(person)}
                     >
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-green-400 flex items-center justify-center text-white font-bold">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-teal-400 flex items-center justify-center text-white font-bold">
                         {person.name.charAt(0)}
                       </div>
                       <div className="flex-1">
@@ -273,7 +270,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = () => {
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {person.interests.slice(0, 2).map((interest, i) => (
-                          <span key={i} className="text-xs bg-green-500/20 text-green-300 px-2 py-1 rounded-full">
+                          <span key={i} className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
                             {interest}
                           </span>
                         ))}
@@ -293,7 +290,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = () => {
           <motion.div 
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
-            className="lg:col-span-2 relative h-[600px] rounded-xl overflow-hidden shadow-xl bg-gray-800 border border-green-800/30"
+            className="lg:col-span-2 relative h-[600px] rounded-xl overflow-hidden shadow-xl bg-gray-800 border border-blue-500/30"
           >
             <MapContainer 
               center={userLocation ? [userLocation.lat, userLocation.lng] : [defaultLocation.lat, defaultLocation.lng]} 
@@ -315,7 +312,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = () => {
                 >
                   <Popup className="custom-popup">
                     <div className="p-2">
-                      <h3 className="font-semibold text-lg text-red-400">Your Location</h3>
+                      <h3 className="font-semibold text-lg text-blue-400">Your Location</h3>
                       <p className="text-sm text-gray-300">You are here</p>
                     </div>
                   </Popup>
@@ -332,11 +329,11 @@ const InteractiveMap: React.FC<InteractiveMapProps> = () => {
                   <Popup className="custom-popup">
                     <div className="p-3">
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-r from-green-500 to-green-400 flex items-center justify-center text-white text-xl font-bold">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-teal-400 flex items-center justify-center text-white text-xl font-bold">
                           {person.name.charAt(0)}
                         </div>
                         <div>
-                          <h3 className="font-semibold text-lg text-green-400">{person.name}</h3>
+                          <h3 className="font-semibold text-lg text-blue-400">{person.name}</h3>
                           <p className="text-sm text-gray-300">{person.status}</p>
                         </div>
                       </div>
@@ -345,7 +342,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = () => {
                         <p className="text-xs text-gray-400 uppercase font-semibold mb-1">Interests</p>
                         <div className="flex flex-wrap gap-1">
                           {person.interests.map((interest, i) => (
-                            <span key={i} className="text-xs bg-green-500/20 text-green-300 px-2 py-1 rounded-full">
+                            <span key={i} className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
                               {interest}
                             </span>
                           ))}
@@ -360,8 +357,8 @@ const InteractiveMap: React.FC<InteractiveMapProps> = () => {
                             connectionRequests.includes(person.id) 
                               ? 'bg-gray-600 text-gray-300 cursor-not-allowed' 
                               : connections.includes(person.id)
-                                ? 'bg-green-700 text-white cursor-not-allowed'
-                                : 'bg-green-500 hover:bg-green-600 text-white'
+                                ? 'bg-teal-700 text-white cursor-not-allowed'
+                                : 'bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 text-white'
                           }`}
                         >
                           {connectionRequests.includes(person.id) 
@@ -385,7 +382,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = () => {
               <div className="bg-white/90 p-3 rounded-lg shadow-lg">
                 <button 
                   onClick={getUserLocation}
-                  className="flex items-center space-x-2 text-gray-700 hover:text-green-600 transition-colors"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
                 >
                   <MapPin className="w-5 h-5" />
                   <span>Center Map</span>
@@ -393,11 +390,13 @@ const InteractiveMap: React.FC<InteractiveMapProps> = () => {
               </div>
             </div>
             
-            {/* Loading Indicators */}
+            {/* Loading Overlay */}
             {isLoading && (
-              <div className="absolute top-4 left-4 z-[1000] bg-gray-800/80 p-3 rounded-lg shadow-lg flex items-center">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mr-2"></div>
-                <span className="text-green-400 text-sm">Getting your location...</span>
+              <div className="absolute inset-0 bg-gray-900/70 flex items-center justify-center">
+                <div className="bg-gray-800 p-6 rounded-xl shadow-xl flex items-center space-x-4">
+                  <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+                  <p className="text-blue-400 font-medium">Getting your location...</p>
+                </div>
               </div>
             )}
           </motion.div>
