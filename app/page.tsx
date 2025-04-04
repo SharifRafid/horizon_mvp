@@ -1268,28 +1268,21 @@ export default function App() {
           )}
 
           {/* Profile Panel */}
-          <AnimatePresence>
-            {showProfile && (
-              <motion.div
-                initial={{ opacity: 0, x: "100%" }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: "100%" }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="fixed inset-y-0 right-0 w-full sm:w-96 bg-gray-900 shadow-2xl border-l border-gray-800 z-50 overflow-y-auto"
+          <div
+            className={`fixed inset-y-0 right-0 w-full sm:w-96 bg-gray-900 shadow-2xl border-l border-gray-800 z-50 overflow-y-auto transition-transform duration-300 ease-in-out ${showProfile ? 'translate-x-0' : 'translate-x-full'
+              }`}
+          >
+            <div className="p-4 border-b border-gray-800 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-white">Your Profile</h2>
+              <button
+                onClick={() => setShowProfile(false)}
+                className="p-2 rounded-full hover:bg-gray-800 transition-colors"
               >
-                <div className="p-4 border-b border-gray-800 flex justify-between items-center">
-                  <h2 className="text-xl font-bold text-white">Your Profile</h2>
-                  <button
-                    onClick={() => setShowProfile(false)}
-                    className="p-2 rounded-full hover:bg-gray-800 transition-colors"
-                  >
-                    <X className="w-5 h-5 text-gray-400" />
-                  </button>
-                </div>
-                <ProfilePage />
-              </motion.div>
-            )}
-          </AnimatePresence>
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+            <ProfilePage />
+          </div>
         </div>
       )}
     </div>
