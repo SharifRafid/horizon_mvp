@@ -302,10 +302,10 @@ const CommunityChat: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
   };
   
   return (
-    <div className="flex flex-col h-full pt-8"> {/* Added pt-8 to make room for close button */}
+    <div className="flex flex-col h-full pt-1"> {/* Added pt-8 to make room for close button */}
       <div className="flex flex-col md:flex-row h-full">
         {/* Sidebar - Channels and Online Users */}
-        <div className="w-full md:w-1/3 bg-gray-900 border-r border-blue-500/20 flex flex-col md:h-full overflow-hidden">
+        {false ? <div className="w-full md:w-1/3 bg-gray-900 border-r border-blue-500/20 flex flex-col md:h-full overflow-hidden">
           <div className="p-4 border-b border-blue-500/20">
             <h3 className="text-blue-400 font-medium mb-2 flex items-center">
               <MessageCircle className="w-4 h-4 mr-2" />
@@ -372,7 +372,7 @@ const CommunityChat: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
               </button>
             </div>
           )}
-        </div>
+        </div>:<div></div>}
         
         {/* Mobile channel selector */}
         <div className="md:hidden p-2 bg-gray-900 border-b border-blue-500/20 flex overflow-x-auto">

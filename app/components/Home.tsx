@@ -11,23 +11,6 @@ interface HomeProps {
 }
 
 const Home: React.FC<HomeProps> = ({ initialSection = "content" }) => {
-  const videos = [
-    { title: "Inspirational Talk", url: "https://youtube.com/embed/dQw4w9WgXcQ", link: "https://youtube.com/watch?v=dQw4w9WgXcQ" },
-    { title: "Motivational Speech", url: "https://youtube.com/embed/dQw4w9WgXcQ", link: "https://youtube.com/watch?v=dQw4w9WgXcQ" },
-    { title: "Success Story", url: "https://youtube.com/embed/dQw4w9WgXcQ", link: "https://youtube.com/watch?v=dQw4w9WgXcQ" },
-  ];
-  const tiktoks = [
-    { title: "Quick Motivation", url: "https://www.tiktok.com/embed/v2/123456", link: "https://tiktok.com/@user/123456" },
-    { title: "Life Hack", url: "https://www.tiktok.com/embed/v2/123456", link: "https://tiktok.com/@user/123456" },
-  ];
-  const books = [
-    { title: "The Power of Now", url: "https://example.com/book1.pdf", cover: "https://picsum.photos/200/300" },
-    { title: "Atomic Habits", url: "https://example.com/book2.pdf", cover: "https://picsum.photos/200/300" },
-  ];
-  const articles = [
-    { title: "Change the World", url: "https://medium.com/article1", preview: "Lorem ipsum dolor sit amet, consectetur adipiscing elit..." },
-    { title: "Finding Purpose", url: "https://medium.com/article2", preview: "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua..." },
-  ];
   const userLocation = { lat: 40.7128, lng: -74.0060 };
   const nearbyPeople = [
     { 
@@ -75,7 +58,7 @@ const Home: React.FC<HomeProps> = ({ initialSection = "content" }) => {
   const renderSection = () => {
     switch (initialSection) {
       case "content":
-        return <ContentLibrary videos={videos} tiktoks={tiktoks} books={books} articles={articles} />;
+        return <ContentLibrary/>;
       case "map":
         return <InteractiveMap userLocation={userLocation} nearbyPeople={nearbyPeople} />;
       case "passion":
@@ -85,7 +68,7 @@ const Home: React.FC<HomeProps> = ({ initialSection = "content" }) => {
       case "chat":
         return <CommunityChat />;
       default:
-        return <ContentLibrary videos={videos} tiktoks={tiktoks} books={books} articles={articles} />;
+        return <ContentLibrary/>;
     }
   };
 
